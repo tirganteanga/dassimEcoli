@@ -1,0 +1,141 @@
+---
+title: "analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+#library(dassimEcoli)
+library(ggtree)
+library(ape)
+library(phytools)
+library(tidyverse)
+library(blantyreESBL)
+library(lubridate)
+library(ggnewscale)
+library(countrycode)
+#library(viridis)
+library(blantyreESBL)
+library(kableExtra)
+library(patchwork)
+library(here)
+library(ggnewscale)
+library(scales)
+library(ggstance)
+
+write_figs <- TRUE
+
+if (write_figs) {
+  dir.create(here("figures"))
+  dir.create(here("tables"))
+}
+
+```
+
+## Introduction
+
+This document generates figures and tables for Joe's *E. coli* genomics paper.
+
+### Assembly stats and accession numbers
+
+```{r accession-table}
+
+dassimEcoli_BTEcoli.accession %>%
+  select(accession,
+         lane,
+         supplier_name,
+         pid,
+         date_of_collection,
+         number_of_contigs,
+         N50) %>%
+  kbl(caption =
+        "Accession numbers and assembly statistics for included samples"
+      ) %>%
+  kable_classic(full_width = FALSE)
+
+if (write_figs) {
+  write_csv(
+    dassimEcoli_BTEcoli.accession %>%
+      select(
+        accession,
+        lane,
+         supplier_name,
+         pid,
+         date_of_collection,
+         number_of_contigs,
+         N50),
+    here("tables/accession_numbers.csv")
+  )
+}
+
+```
+
+### Phylogroup and MLST
+
+```{r mlst-and-phylogroup, fig.height = 4, fig.width = 7, fig.cap = "FIGURE 1: Sequence types (A) and phylogroups (B) of included isolates"}
+
+
+
+
+dassimEcoli_BTEcoli.accession %>% 
+  group_by(ST) %>% 
+  mutate(n = n()) %>% 
+  filter(n > 2) %>% 
+  ggplot(aes(fct_rev(fct_infreq(ST)), fill = Phylogroup)) +
+  geom_bar() +
+  coord_flip() +
+  theme_bw() +
+  theme(legend.position = "none") +
+  labs(x = "ST", y = "n") -> p1 
+#  scale_fill_viridis_d(option = "cividis") -> p1
+  
+dassimEcoli_BTEcoli.accession %>% 
+  ggplot(aes(fct_infreq(Phylogroup), fill = Phylogroup)) +
+  geom_bar() +
+  theme_bw() +
+  theme(legend.position = "none", 
+        axis.text.x = element_text(angle = 45,
+                                   hjust = 1)) +
+#  scale_fill_viridis_d(option = "cividis") +
+  labs(x = "Phylogroup", y = "n") -> p2
+  
+(p1 | p2) + plot_annotation(tag_levels = "A") -> mlst_plot
+
+if (write_figs) {
+  ggsave(
+    here("figures/mlst_plot.pdf"),
+    mlst_plot,
+    width = 7,
+    height = 4)
+  ggsave(
+    here("figures/mlst_plot.svg"),
+    mlst_plot,
+    width = 7,
+    height = 4)
+}
+mlst_plot 
+```
+
+
+### Virulence
+
+* any shiga toxin _stx_ present assign STEC
+* if _eae_ is present the assign aEPEC (atypical EPEC)/EPEC;
+* if both Shiga-toxin and eae present assign EHEC
+* if either _aatA_, _aggR_ or _aaiC_ present the assign EAEC;
+* if _est_ (I think _sta1_ in virulencefinder) or elt (I think _ltcA_ in virulencefinder) present assign ETEC
+* if _ipaH9.8_ or _ipaD_, characteristic of the invasive virulence plasmid pINV present assignmen EIEC
+
+Only 2 aEPEC/EPEC, 10 EAEC.
+
+
