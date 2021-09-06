@@ -133,3 +133,70 @@ btESBL_sequence_sample_metadata %>%
   dassimEcoli_BTEcoli.accession
 
 use_data(dassimEcoli_BTEcoli.accession, overwrite = TRUE)
+
+# add QRDR snps --------------------------
+
+read_tsv(
+  here("data-raw/QRDR_ariba_output.tsv")
+  )  %>%
+  rename(sample = "26141_1#222") %>% 
+  filter(ref_name != "ref_name") %>% 
+  mutate(sample = gsub("#", "_", sample)) %>%
+  filter(sample %in% dassimEcoli_BTEcoli.accession$lane) %>%
+  mutate(
+    codon_posn = str_extract(ref_ctg_change, "[0-9]+"),
+    codon_posn = as.numeric(codon_posn)
+  ) %>%
+  filter(ref_ctg_effect == "NONSYN") %>%
+  filter(
+    (ref_name == "GyrA" &
+       codon_posn >= 67 & codon_posn <= 106) |
+      (ref_name == "GyrB" &
+         codon_posn >= 426 & codon_posn <= 464) |
+      (ref_name == "ParC" &
+         codon_posn >= 56 & codon_posn <= 108) |
+      (ref_name == "ParE" &
+         codon_posn >= 365 & codon_posn <= 525)
+  ) %>%
+  mutate(ref_name =  gsub("(^.{1})", '\\L\\1',
+                          ref_name,
+                          perl = TRUE)) %>% 
+  transmute(gene = ref_name,
+            variant = ref_ctg_change,
+            sample = sample) ->
+  dassimEcoli_BTEcoli.QRDRmuts
+
+
+dassimEcoli_CARD.QRDRmuts <- 
+  read_csv(here("data-raw/2021-09-06_CARD-QRDR-mutations.csv"))
+
+use_data(dassimEcoli_BTEcoli.QRDRmuts, overwrite = TRUE)
+use_data(dassimEcoli_CARD.QRDRmuts, overwrite = TRUE)
+
+# beta lactamase data
+# downloaded 6 sept 2021
+
+
+dassimEcoli_NCBI.betalactamases <- 
+  read_tsv("https://ftp.ncbi.nlm.nih.gov/pathogen/betalactamases/Allele.tab") %>%
+  rename_with( ~ tolower(gsub(" ", "_", .x))) %>%
+  rename_with( ~ gsub("#", "", .x)) %>%
+  mutate(
+    allele_name = gsub("-", "_", allele_name),
+    class = case_when(
+      grepl("carbapenem-hydrolyzing",
+            curated_gene_product_name) ~ "Carbapenemase",
+      grepl("metallo-beta-lactamase",
+            curated_gene_product_name) ~ "Carbapenemase",
+      grepl(
+        "extended-spectrum beta-lactamase",
+        curated_gene_product_name
+      ) ~ "ESBL",
+      grepl("class C",
+            curated_gene_product_name) ~ "AmpC",
+      grepl("beta-lactamase",
+            curated_gene_product_name) ~ "Penicillinase"
+    )
+  )
+
+use_data(dassimEcoli_NCBI.betalactamases, overwrite = TRUE)
