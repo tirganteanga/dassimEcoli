@@ -139,3 +139,225 @@ mlst_plot
 Only 2 aEPEC/EPEC, 10 EAEC.
 
 
+### Malawi phylogeny
+
+```{r malawi-tree, fig.height=9, fig.width= 9, fig.cap = "SUPPLEMENTARY FIGURE 1: Midpoint-rooted maximum-likelohood phylogeny of study isolates showing phylogroup and multilocus sequence type."}
+
+dassimEcoli_BTEcoli.accession %>% 
+  as.data.frame() -> dassimEcoli_BTEcoli.accession 
+
+rownames(dassimEcoli_BTEcoli.accession ) <-
+  dassimEcoli_BTEcoli.accession$lane
+
+ dassimEcoli_BTEcoli.accession %>% 
+  select(lane, ST) %>% 
+  group_by(ST) %>% 
+  mutate(n = n(),
+         ST = if_else(n == 1, "Other", ST)) %>% 
+  mutate(ST = if_else(!ST %in% c("Novel", "Other"), 
+                      paste0("ST", ST), ST)) %>% 
+  arrange(fct_infreq(ST)) %>% 
+  pivot_wider(id_cols = lane, 
+              names_from = ST,
+              values_from = ST,
+              values_fn = length,
+              values_fill = 0) %>% 
+  mutate(across(everything(), as.character)
+         ) %>% 
+  relocate(Other, .after = everything()) %>% 
+  as.data.frame() ->
+  mlst_onehot
+
+rownames(mlst_onehot) <- mlst_onehot$lane
+
+(
+(
+  ggtree(btESBL_coregene_tree_esco) %>%
+    gheatmap(
+      select(dassimEcoli_BTEcoli.accession, Phylogroup),
+      width = 0.05,
+      color = NA,
+      font.size = 3,
+      colnames_angle = 90,
+      colnames_position = "top",
+      colnames_offset_y = 3,
+      hjust = 0
+    ) +
+    scale_fill_manual(
+      values = hue_pal()(8),
+      name = "Phylogroup") + 
+   new_scale_fill()
+) %>%
+  gheatmap(select(mlst_onehot, -lane),
+           font.size = 2.5,
+           color = NA,
+           colnames_angle = 90,
+           offset = .02,
+           colnames_offset_y = 3,
+           colnames_position = "top",
+           hjust = 0)  +
+    scale_fill_manual(values = c("lightgrey", "black"), guide = "none") +
+    new_scale_fill()
+  ) %>% 
+  gheatmap(select(dassimEcoli_BTEcoli.accession, Pathotype),
+           width = 0.05,
+           font.size = 3,
+           color = NA,
+           colnames_angle = 90,
+           offset = .009,
+           colnames_offset_y = 3,
+           colnames_position = "top",
+           hjust = 0)  +
+  scale_fill_manual(values = viridis_pal(option = "plasma")(6)[c(3,5)],
+                    name = "Pathotype",
+                    na.translate = FALSE) +
+  ylim(NA, 540)  + 
+  annotate("text", x = 0.27, y = 540, label = "Sequence Type",
+           size = 3) -> malawi_treeplot
+
+
+malawi_treeplot
+
+if (write_figs) {
+  ggsave(
+    here("figures/SUPP_F1_malawi_treeplot.svg"),
+    malawi_treeplot,
+    width = 9,
+    height = 9
+  )
+  ggsave(
+    here("figures/SUPP_F1_malawi_treeplot.pdf"),
+    malawi_treeplot,
+    width = 9,
+    height = 9
+  )
+}
+
+```
+
+
+### AMR determinents
+
+```{r amrplot, fig.width= 6, fig.height=10}
+
+
+# add class ro which resistnce is conferred --------------------------------
+
+quinolone <- "Par|Gyr|Par|Qnr|Qep|Nor|GyrA|GyrB|ParC|ParE"
+tetracycline <- "Tet"
+sulphonamide <- "Sul"
+aminoglycoside <- "Str|Aad|Aac|Aph|Rmt|APH"
+streptothricin <- "Sat"
+macrolide <- "Mph|Mdf|Erm|Ere"
+fosfomycin <- "Fos"
+chloramphenicol <- "Cat|FloR|Cml"
+trimethoprim <- "Dfr"
+rifampicin <- "Arr"
+ESBL <- "SHV_12"
+penicillinase <- "OKP|SCO|LEN|LAP"
+ampc <- "CMY"
+
+btESBL_amrgenes %>% 
+  mutate(sample = gsub("#", "_", sample)) %>% 
+  semi_join(dassimEcoli_BTEcoli.accession, 
+            by = c("sample" = "lane")) %>% 
+  select(-species) %>% 
+  rename(gene = ref_seq) %>% 
+  # add in QRDR mutations
+  bind_rows(
+    dassimEcoli_BTEcoli.QRDRmuts %>% 
+      semi_join(
+        dassimEcoli_CARD.QRDRmuts, 
+        by = c("variant" = "variant",
+              "gene" =  "gene")
+      ) %>% 
+      select(gene, sample) %>% 
+      unique() %>% 
+      mutate(gene =
+               gsub("(^.{1})", '\\U\\1',
+                    gene,
+                    perl = TRUE))
+      ) %>% 
+  filter(!grepl("AmpH|AMPH|AmpC|MrdA|MefB", gene)) %>% 
+  # add in beta-lactamases
+  left_join(
+    select(dassimEcoli_NCBI.betalactamases, allele_name, class),
+    by = c("gene" = "allele_name")) %>% 
+  mutate(class = case_when(
+    str_detect(gene, quinolone) ~ "Quinolone",
+    str_detect(gene, tetracycline) ~ "Tetracycline",
+    str_detect(gene, sulphonamide) ~ "Sulphonamide",
+    str_detect(gene, aminoglycoside) ~ "Aminoglycoside",
+    str_detect(gene, streptothricin) ~ "Streptothricin",
+    str_detect(gene, macrolide) ~ "Macrolide",
+    str_detect(gene, fosfomycin) ~ "Fosfomycin",
+    str_detect(gene, chloramphenicol) ~ "Chloramphenicol",
+    str_detect(gene, rifampicin) ~ "Rifampicin",
+    str_detect(gene,trimethoprim) ~ "Trimethoprim",
+    str_detect(gene,ESBL) ~ "ESBL",
+    str_detect(gene,penicillinase) ~ "Penicillinase",
+    str_detect(gene,ampc) ~ "AmpC",
+    TRUE ~ class
+  )) %>% 
+  mutate(gene = if_else(gene == "TEM_95",
+                        "TEM_1",
+                        gene)) ->
+  amr
+
+### plot prevalence ----------------------------------------
+
+
+amr %>% 
+  group_by(class) %>% 
+  mutate(n_class = length(class),
+         n_genes_in_class = n_distinct(gene)) %>% 
+  select(class, n_class,n_genes_in_class) %>% 
+  unique() %>% 
+  arrange(n_class) %>% 
+  ungroup() %>% 
+  mutate(end = cumsum(n_genes_in_class),
+         start = lag(end, default = 0),
+         textpos = start + 0.6 + 0.5 * (end - start)) -> annotate.df
+
+amr %>% 
+  group_by(class) %>% 
+  mutate(n_class = length(class),
+         n_genes_in_class = n_distinct(gene),
+         gene = gsub("_", "-", gene)) %>% 
+ggplot( aes(fct_reorder(fct_rev(fct_infreq(gene)), n_class), 
+            fill = class)) + 
+  geom_bar() +
+  theme_bw() +
+  coord_flip(ylim = c(-5,450),clip = "off", expand = FALSE, xlim = c(0, 76)) +
+  annotate(geom = "segment",
+             x = annotate.df$start + 0.5 + 0.2, 
+             xend = annotate.df$end + 0.5 - 0.2, 
+             y = -115, yend = -115 ) +
+  annotate(geom = "text", y = -125,
+           x = annotate.df$textpos,
+           label = annotate.df$class, 
+           size = 3, 
+           hjust = 1) +
+  labs(y = "Number") + 
+  theme(plot.margin = unit(c(0.2,0.5,0.2,4), "cm"),
+        axis.title.y  = element_blank(),
+        legend.position = "none") -> amrplot
+
+amrplot
+
+
+if (write_figs) {
+  ggsave(
+    filename = here("figures/FIG_2_amr_plot.pdf"),
+    plot = amrplot,
+    width = 6,
+    height = 10
+  )
+  ggsave(
+    filename = here("figures/FIG_2_amr_plot.svg"),
+    plot = amrplot,
+    width = 6,
+    height = 10
+  )
+}
+```
