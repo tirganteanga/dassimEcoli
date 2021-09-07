@@ -15,6 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
+library(devtools)
 #library(dassimEcoli)
 library(ggtree)
 library(ape)
@@ -32,6 +33,7 @@ library(here)
 library(ggnewscale)
 library(scales)
 library(ggstance)
+load_all()
 
 write_figs <- TRUE
 
@@ -269,7 +271,7 @@ btESBL_amrgenes %>%
       semi_join(
         dassimEcoli_CARD.QRDRmuts, 
         by = c("variant" = "variant",
-              "gene" =  "gene")
+              "gene" =  "region")
       ) %>% 
       select(gene, sample) %>% 
       unique() %>% 
@@ -360,4 +362,636 @@ if (write_figs) {
     height = 10
   )
 }
+```
+
+# Global context - tree
+
+
+```{r esco-glob-tree-prep}
+
+ #prepare metadata ----------
+# lookup list of horesh merged clusters 
+
+
+
+purrr::map_df(unique(grep("_", dassimEcoli_BTEcoli.accession$Cluster, value = TRUE)),
+              function(x)
+                data.frame(mergeclust = x,
+                           splts = strsplit(x, "_")[[1]])) %>%
+  mutate(splts = as.numeric(splts)) -> mergclust_lookup
+
+bind_rows(
+  dassimEcoli_BTEcoli.accession %>%
+    transmute(
+      Taxon = lane,
+      Cluster = Cluster,
+      ST = ST,
+      Phylogroup = Phylogroup,
+      study = "dassim",
+      Country = "Malawi",
+      Continent = "Africa",
+      Year = year(date_of_collection)
+    ),
+  
+  dassimEcoli_Musicha.metadata %>%
+    transmute(
+      Taxon = Lane,
+      Cluster = Cluster,
+      ST = if_else(is.na(ST),
+                   "Novel",
+                   as.character(ST)),
+      Phylogroup = phylogroup,
+      study = "musicha",
+      Country = "Malawi",
+      Continent = "Africa",
+      Year = Year
+    ),
+  
+  dassimEcoli_Horesh.metadata %>%
+    mutate(assembly_name_recode =
+             gsub("\\..*$", "", Assembly_name)) %>%
+    left_join(mergclust_lookup, by = c("PopPUNK" = "splts")) %>%
+    transmute(
+      Taxon = gsub(
+        "#",
+        "_",
+        if_else(
+          !is.na(name_in_presence_absence),
+          name_in_presence_absence,
+          assembly_name_recode
+        )
+      ),
+      Cluster = if_else(!is.na(mergeclust),
+                        mergeclust,
+                        as.character(PopPUNK)),
+      ST = gsub("~", "", ST),
+      Phylogroup = Phylogroup,
+      study = "horesh",
+      Country = Country,
+      Continent = Continent,
+      Year = case_when(
+        Year == "Unknown" ~ NA_real_,
+        grepl("s", Year)  ~ as.numeric(gsub("s", "", Year)),
+        grepl("-", Year) ~  as.numeric(gsub("-.*$", "", Year)),
+        TRUE ~ as.numeric(str_trim(Year))
+      )
+    )) %>%   mutate(Continent =
+                 case_when(
+                   grepl("America", Continent) ~ "Americas",
+                   is.na(Continent) ~ "Unknown",
+                   TRUE ~ Continent
+                 )) %>%    mutate(
+                   cluster_recode =
+                     if_else(
+                       !grepl(paste(c(
+                         "\\<1", 2:1153, "1184\\>"
+                       ), collapse = "\\>|\\<"),
+                       Cluster) &
+                         !grepl("_", Cluster),
+                       NA_character_,
+                       Cluster
+                     ),
+                   cluster_recode = factor(
+                     cluster_recode,
+                     levels =
+                     unique(cluster_recode)[
+                       order(
+                         as.numeric(
+                           gsub("_.*$", "", unique(cluster_recode))
+                           )
+                         )
+                       ]),
+                   Phylogroup =
+                     case_when(
+                       Phylogroup %in% c("Unknown", "Not Determined") ~
+                         "Unknown",
+                       is.na(Phylogroup) ~ "Unknown",
+                       TRUE ~ Phylogroup
+                     )
+                 ) -> df_all
+
+df_all <- as.data.frame(df_all)
+rownames(df_all) <- df_all$Taxon  
+
+```
+
+```{r esco-glob-tree-plot, fig.height = 12, fig.width = 9, fig.cap = "A: Malawian E. coli isolates in a global phylogeny. All genomes from Musicha et al along with 500 context genomes from Horesh et al are included. Heatmaps show Phylogroup, year of collection, continent of collection and country (Malawi vs other). Highlighted areas and subtrees B-D show the phylogenetic context of the three commonest STs in this study: ST410 (B), ST167 (C) and ST131 (D). The tree tips in the subtree plots are coloured by popPUNK cluster assignment, with novel clusters that were not identified in the original Horesh collection given no color." }
+
+#define color palettes
+
+pgroup_cols <- c(hue_pal()(9), "white")
+  names(pgroup_cols) <- sort(unique(df_all$Phylogroup))
+
+continent_cols <- c(viridis_pal(option = "plasma")(5),
+                    "white")
+names(continent_cols) <- sort(unique(df_all$Continent))
+
+country_cols <-
+  c("Malawi" =  "grey15",
+    "Not Malawi" = "lightgrey")
+
+dassimEcoli_globaltree -> horesh_context_tree
+
+popPUNK_clusts_inplots <- 
+  df_all %>% 
+  filter(Taxon %in% 
+           c(treeio::tree_subset(
+             horesh_context_tree, 1834, levels_back = 0)$tip.label,
+             treeio::tree_subset(
+               horesh_context_tree, 1526, levels_back = 0)$tip.label,
+             treeio::tree_subset(
+               horesh_context_tree, 1227, levels_back = 0)$tip.label)
+  ) %>% 
+  select(cluster_recode) %>% 
+  unique() %>% 
+  arrange(cluster_recode) %>% 
+  pull(cluster_recode)
+ 
+     
+popPUNK_cols <- c(
+  "palegreen2",
+  "#E31A1C",
+  "green4",
+  "#6A3D9A",
+  "#FF7F00",
+  "steelblue4",
+  "gold1",
+  "skyblue2",
+  "dodgerblue2",
+  "#FDBF6F",
+  "gray70",
+  "maroon",
+  "orchid1",
+  "darkturquoise",
+  "darkorange4",
+  "brown",
+  "white"
+)
+
+
+
+names(popPUNK_cols) <- df_all %>% 
+  filter(Taxon %in% 
+           c(treeio::tree_subset(
+             horesh_context_tree, 1834, levels_back = 0)$tip.label,
+             treeio::tree_subset(
+               horesh_context_tree, 1526, levels_back = 0)$tip.label,
+             treeio::tree_subset(
+               horesh_context_tree, 1227, levels_back = 0)$tip.label)
+  ) %>% 
+  select(cluster_recode) %>% 
+  unique() %>% 
+  arrange(cluster_recode) %>% 
+  pull(cluster_recode)
+
+popPUNK_cols <- popPUNK_cols[1:16]
+
+
+
+offset_add <- 0
+  
+(
+  (
+    (
+      (
+        ggtree(horesh_context_tree, size = 0.4) %<+%
+          (select(df_all, Taxon, ST) %>%
+             mutate(
+               ST = if_else(ST == 410,
+                                 as.character("hilight"), NA_character_)
+             ))  %>%
+          gheatmap(
+            select(df_all, `Year`),
+            font.size = 4,
+            width = 0.03,
+            colnames_position = "top",
+            color = NA,
+            colnames_offset_y = 5,
+            colnames_angle = 90,
+            offset = 0.0006 + offset_add,
+            hjust = 0
+          )  +
+          scale_fill_viridis_c(name = "Year", na.value = "white",
+                               guide = guide_colorbar(order = 2)) +
+          new_scale_fill()
+      ) %>%
+        gheatmap(
+          select(df_all, Continent),
+          font.size = 4,
+          width = 0.03,
+          colnames_position = "top",
+          color = NA,
+          colnames_offset_y = 5,
+          colnames_angle = 90,
+          offset = 0.0012 + offset_add,
+          hjust = 0
+        ) +
+        scale_fill_manual(values = 
+                           continent_cols,
+                          name = "Continent",
+                          guide = guide_legend(order = 3)) +
+      # geom_tippoint(aes(color = ST), na.rm = TRUE, size = 0.5) +
+      #   scale_color_manual(values  = "red", na.translate = FALSE) +
+        new_scale_fill()
+    ) %>%
+      gheatmap(
+        select(df_all, Country) %>%
+          mutate(Country = if_else(
+            Country == "Malawi",
+            "Malawi", "Not Malawi"
+          )),
+        font.size = 4,
+        width = 0.03,
+        colnames_position = "top",
+        color = NA,
+        colnames_offset_y = 5,
+        colnames_angle = 90,
+        offset = 0.0018 + offset_add,
+        hjust = 0
+      ) +
+      scale_fill_manual(values = country_cols,
+                        name = "Country",
+                        guide = guide_legend(order = 4)) +
+      new_scale_fill()
+  ) %>%
+    gheatmap(
+      select(df_all, Phylogroup) %>% 
+        mutate(Phylogroup = if_else(
+          is.na(Phylogroup) ,"Unknown",
+          Phylogroup)),
+      width = 0.03,
+      color = NA,
+      font.size = 4,
+      colnames_angle = 90,
+      colnames_position = "top",
+      colnames_offset_y = 3,
+      hjust = 0,
+      offset = 0 + offset_add
+    ) +
+    scale_fill_manual(values = pgroup_cols,
+                      name = "Phylogroup",
+                      na.translate = FALSE,
+                      guide = guide_legend(order = 1)) +
+    new_scale_fill()
+) +
+  ylim(NA, 1150) + 
+  geom_treescale(y = 900, x = 0.005,offset = 10) -> p
+  
+ 
+# subtrees
+
+# viewClade(p, 1834)  + geom_cladelabel(1886, label = "ST167") +
+#  geom_cladelabel(1848, label = "ST617") +
+#   geom_cladelabel(1926, label = "ST44") +
+#   geom_cladelabel(1959, label = "ST656")
+
+
+p + geom_hilight( node = 1834, alpha = 0.3) +  # phylogroup A
+  geom_cladelabel(node = 1834, label = "C", barsize = 0,offset = -0.004) +
+  # node 1888 - st167
+  # node 1848 - ST 617
+  # node 1926 - ST 44
+  geom_highlight( node = 1526, alpha = 0.3) + # st 410 and context
+  geom_cladelabel(node = 1526, label = "B", barsize = 0,offset = -0.0025) +
+  geom_highlight(node = 1227, alpha = 0.3) +
+  geom_cladelabel(node = 1227, label = "D", barsize = 0,offset = -0.0022) -> p
+# st 131
+
+
+offset_add <- 0.0015
+textsize <-  3
+cladelab_offset <- 0.0001
+tippoint_alpha = 0.7
+
+(
+  ggtree(
+    treeio::tree_subset(
+      horesh_context_tree, 1834, levels_back = 0)
+    ) %<+% select(df_all, Taxon, cluster_recode) %>% 
+    gheatmap(
+    select(df_all, Country) %>%
+      mutate(Country = if_else(
+        Country == "Malawi",
+        "Malawi", "Not Malawi")),
+    font.size = 4,
+    width = 0.08,
+    colnames_position = "top",
+    color = NA,
+    colnames_offset_y = 0,
+    colnames_angle = 90,
+    offset = offset_add,
+    hjust = 0
+    ) +
+    scale_fill_manual(
+      values = country_cols, 
+      name = "Country",
+      guide = "none") + 
+      guides(fill = "none") + 
+      new_scale_fill()
+) +
+  ylim(NA, 250) +
+  geom_tippoint(aes(color = cluster_recode), 
+                na.rm = TRUE, 
+                size = 1,
+                alpha = tippoint_alpha) +
+  scale_color_manual(name = "PopPUNK\nCluster",
+                       values = popPUNK_cols,
+                       na.translate = FALSE) +
+  geom_treescale(y = 225,
+                 x = offset_add/5,
+                 offset  = 7.5,
+                 width = 0.0001) -> p_phylo_a_subtree
+
+p_phylo_a_subtree + 
+  geom_cladelabel(node = 245, label = "ST167", 
+                  fontsize = textsize,
+                  offset = cladelab_offset,
+                  offset.text = cladelab_offset) +
+  geom_cladelabel(node = 285, label = "ST44", 
+                  fontsize = textsize,
+                  offset = cladelab_offset,
+                  offset.text = cladelab_offset) +
+  geom_cladelabel(node = 318, label = "ST656", 
+                  fontsize = textsize,
+                  offset = cladelab_offset,
+                  offset.text = cladelab_offset) +
+  geom_cladelabel(node = 233 , 
+                  label = "ST9847", 
+                  fontsize = textsize,
+                  offset = cladelab_offset,
+                  offset.text = cladelab_offset) +
+  geom_cladelabel(node = 207 , 
+                  label = "ST617", 
+                  fontsize = textsize,
+                  offset = cladelab_offset,
+                  offset.text = cladelab_offset) +
+  theme(legend.position = "bottom")  +
+  guides(
+    color = guide_legend(
+      nrow = 2,
+      byrow = TRUE,
+      override.aes = list(alpha = 1))
+    ) ->
+  plot_phyloa_subtree
+   
+    # node 1888 - st167
+    # node 1848 - ST 617
+    # node 1926 - ST 44
+
+# ST131 zoom
+
+offset_add <- 0.0007
+(
+  ggtree(
+    treeio::tree_subset(
+      horesh_context_tree, 1227, levels_back = 0)
+    ) %<+% select(df_all, Taxon, cluster_recode) %>%
+    gheatmap(
+      select(df_all, Country) %>%
+      mutate(Country = if_else(
+        Country == "Malawi",
+        "Malawi", "Not Malawi")),
+      font.size = 4,
+      width = 0.08,
+      colnames_position = "top",
+      color = NA,
+      colnames_offset_y = 0,
+      colnames_angle = 90,
+      offset =  offset_add,
+      hjust = 0
+    ) +
+    scale_fill_manual(values = country_cols, 
+                        name = "Country",
+                        guide = "none") +
+    new_scale_fill()
+) +
+  ylim(NA, 120) +
+  geom_tippoint(aes(color = cluster_recode), 
+                na.rm = TRUE, 
+                size = 1,
+                alpha = tippoint_alpha) +
+  scale_color_manual(name = "PopPUNK\nCluster",
+                     values = popPUNK_cols,
+                     na.translate = FALSE) +
+  geom_treescale(y = 108,
+                 x = offset_add/5,
+                 offset  = 3.6,
+                 width = 0.0001) -> p_st131_subtree
+
+p_st131_subtree + 
+  geom_cladelabel(node = 100, label = "ST131", 
+                  fontsize = textsize,
+                  offset = cladelab_offset,
+                  offset.text = cladelab_offset) +
+  theme(legend.position = "bottom") +
+  guides(color = guide_legend(
+    nrow = 2,
+    byrow = TRUE,
+    override.aes = list(alpha = 1)) 
+    ) -> plot_st131tree
+
+# st410 subtree
+
+
+
+offset_add <- 0.0008
+# offset_multiple <- 0.00008
+
+(
+  ggtree(
+    treeio::tree_subset(
+      horesh_context_tree, 1526, levels_back = 0)
+    ) %<+% select(df_all, Taxon, cluster_recode) %>%
+    gheatmap(
+    select(df_all, Country) %>%
+      mutate(Country = if_else(
+        Country == "Malawi",
+        "Malawi", "Not Malawi")),
+    font.size = 4,
+    width = 0.08,
+    colnames_position = "top",
+    color = NA,
+    colnames_offset_y = 0,
+    colnames_angle = 90,
+    offset = offset_add,
+    hjust = 0
+    ) +
+    scale_fill_manual(values = country_cols, 
+                      name = "Country",
+                      guide = "none") +
+    new_scale_fill()
+) +
+  ylim(NA, 70) +
+  geom_tippoint(aes(color = cluster_recode),
+                na.rm = TRUE,
+                size = 1,
+                alpha = tippoint_alpha) +
+  scale_color_manual(name = "PopPUNK\nCluster",
+                     values = popPUNK_cols,
+                     na.translate = FALSE) +
+  geom_treescale(y = 63,
+                 x = offset_add/5,
+                 offset  = 2.1,
+                 width = 0.0001) -> p_st410_subtree
+
+p_st410_subtree +
+  geom_cladelabel(61, label = "ST410", 
+                  fontsize = textsize,
+                  offset = cladelab_offset,
+                  offset.text = cladelab_offset) +
+  theme(legend.position = "bottom")  +
+  guides(
+    color = guide_legend(
+      nrow = 2, byrow = TRUE,
+         override.aes = list(alpha = 1)
+      )
+    ) -> plot_st410tree
+
+(plot_st410tree + plot_phyloa_subtree + plot_st131tree) + 
+  plot_annotation(tag_levels = "A") + plot_layout(guides = "collect") & 
+  theme(legend.position = "bottom")   -> subtreesplot
+
+p / (subtreesplot) + plot_annotation(tag_levels = "A") + 
+  plot_layout(guides = "collect", heights = c(2.5,1)) -> global_tree_plot
+
+# height 12, width 9 loooks gooooooood
+global_tree_plot
+
+if (write_figs) {
+  
+  ggsave(
+    here("figures/global_treeplot.pdf"),
+    global_tree_plot,
+    width = 9,
+    height = 12)
+  ggsave(
+    here("figures/global_treeplot.svg"),
+    global_tree_plot,
+    width = 9,
+    height = 12)
+  
+}
+
+```
+
+```{r popPUNK-diversity-plots, fig.height = 6, fig.width = 6, fig.cap = "PopPUNK cluster assignments of isolates from this study, using the Horesh et al database. A: Proportion of samples assigned to a given cluster for this study (left) and the Horesh collection (right); clusters are ordered numerically which by definition is form largest to smallest in the Horesh collection. B: Cumulative proportion of isolates with cluster membership, with clusters again ordered numerically (i.e. largest to smallest). Dotted line indicates the end of clusters defined in the original Horesh popPUNK database; clusters to the right of this line are newly defined in the isolates in this study."}
+
+
+df_all %>% 
+  filter(study %in% c("dassim", "horesh")) %>% 
+  group_by(study) %>% 
+  mutate(n_tot_study = n()) %>% 
+  group_by(Cluster, study) %>% 
+  summarise(
+    n_cluster = n(),
+    prop_cluster = n_cluster/unique(n_tot_study)) %>% 
+  group_by(Cluster) %>% 
+  mutate(n_studies_cluster_is_in = length(Cluster)) %>% 
+  filter(
+    grepl(paste(c("\\<1",2:49,"50\\>"), collapse = "\\>|\\<"),
+               Cluster) |
+           n_studies_cluster_is_in > 1 |
+           study == "dassim") %>% 
+  filter(!(study == "dassim" & n_cluster <= 3 & n_studies_cluster_is_in == 1 )) %>%
+  ungroup() %>% 
+  mutate(prop_cluster =
+           if_else(
+             study == "dassim",
+             -1*prop_cluster,
+             prop_cluster
+         ),
+         Cluster = factor(
+           Cluster,
+           levels = 
+             unique(Cluster)[
+               order(
+                 as.numeric(
+                   gsub("_.*$","",unique(Cluster))
+                 )
+               )
+             ]
+         )) %>% 
+  mutate(study = case_when(
+    study == "dassim" ~ "This Study",
+    TRUE ~ "Horesh Collection"),
+    study = factor(study, levels = c("This Study", "Horesh Collection"))
+    ) %>% 
+  ggplot(aes(x = prop_cluster, y = fct_rev(Cluster), fill = study)) +
+  geom_col() +
+  theme_bw() +
+  labs(y = "PopPUNK cluster", fill = "",
+       x = "Proportion of samples") +
+  scale_x_continuous(labels = c(0.1,0.0, 0.1, 0.2, 0.3)) +
+  scale_fill_manual(values = viridis_pal(option = "cividis")(8)[c(2,5)]) +
+  theme(
+    axis.text.y = element_text(size = 5),
+    axis.text.x = element_text(size = 5),
+    legend.position = "bottom") -> p1
+
+
+df_all %>% 
+  filter(study %in% c("dassim", "horesh")) %>% 
+  mutate(study = case_when(
+    study == "dassim" ~ "This Study",
+    TRUE ~ "Horesh Collection"),
+    study = factor(study, levels = c("This Study", "Horesh Collection"))
+    ) %>% 
+  mutate(Cluster = factor(
+    Cluster,
+    levels = 
+      unique(Cluster)[
+        order(
+          as.numeric(
+            gsub("_.*$","",unique(Cluster))
+          )
+        )
+      ]
+  )) %>% 
+  ggplot(aes(Cluster, color = study, group = study)) +
+  stat_ecdf(pad = FALSE, geom = "step") +
+  scale_x_discrete(
+    breaks = as.character(c(1,seq(from = 100 , to = 1400, by = 100))),
+    expand = c(0.01,0.01)
+    ) +
+  theme_bw() +
+  labs(y = "Cumulative proportion",
+      x = "PopPUNK cluster", color = ""
+      ) +
+  geom_vline(
+    xintercept = "1184",
+    alpha = 0.8, 
+    linetype = "dotted"
+    ) +
+  scale_color_manual(values = viridis_pal(option = "cividis")(8)[c(2,5)],
+                     guide = "none") +
+  theme(
+    axis.text.y = element_text(size = 5),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 5),
+        legend.position = "none") -> p2
+
+(
+  p1 + 
+    (p2 + plot_spacer() + plot_layout(ncol = 1))
+  ) + plot_layout(ncol = 2, guides = "collect") + 
+  plot_annotation(tag_levels = "A") & 
+  theme(legend.position = "bottom") -> pp_cluster_plots
+
+if (write_figs) {
+  
+  ggsave(
+    here("figures/global_poppunk_clusterplot.pdf"),
+    pp_cluster_plots,
+    width = 6,
+    height = 6)
+  ggsave(
+    here("figures/global_poppunk_clusterplot.svg"),
+    pp_cluster_plots,
+    width = 6,
+    height = 6)
+  
+}
+
+
+
+
 ```
