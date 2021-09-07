@@ -363,7 +363,9 @@ if (write_figs) {
 }
 ```
 
-# Global context - tree
+### Malawi isolates in a global context
+
+#### Phlogeny
 
 
 ```{r esco-glob-tree-prep}
@@ -473,6 +475,7 @@ df_all <- as.data.frame(df_all)
 rownames(df_all) <- df_all$Taxon  
 
 ```
+
 
 ```{r esco-glob-tree-plot, fig.height = 12, fig.width = 9, fig.cap = "A: Malawian E. coli isolates in a global phylogeny. All genomes from Musicha et al along with 500 context genomes from Horesh et al are included. Heatmaps show Phylogroup, year of collection, continent of collection and country (Malawi vs other). Highlighted areas and subtrees B-D show the phylogenetic context of the three commonest STs in this study: ST410 (B), ST167 (C) and ST131 (D). The tree tips in the subtree plots are coloured by popPUNK cluster assignment, with novel clusters that were not identified in the original Horesh collection given no color." }
 
@@ -873,6 +876,8 @@ if (write_figs) {
 
 ```
 
+#### PopPUNK clusters
+
 ```{r popPUNK-diversity-plots, fig.height = 6, fig.width = 6, fig.cap = "PopPUNK cluster assignments of isolates from this study, using the Horesh et al database. A: Proportion of samples assigned to a given cluster for this study (left) and the Horesh collection (right); clusters are ordered numerically which by definition is form largest to smallest in the Horesh collection. B: Cumulative proportion of isolates with cluster membership, with clusters again ordered numerically (i.e. largest to smallest). Dotted line indicates the end of clusters defined in the original Horesh popPUNK database; clusters to the right of this line are newly defined in the isolates in this study."}
 
 
@@ -974,6 +979,8 @@ df_all %>%
   ) + plot_layout(ncol = 2, guides = "collect") + 
   plot_annotation(tag_levels = "A") & 
   theme(legend.position = "bottom") -> pp_cluster_plots
+
+pp_cluster_plots
 
 if (write_figs) {
   
