@@ -1,5 +1,5 @@
 ---
-title: "analysis"
+title: "Reproducible analysis"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{analysis}
@@ -15,27 +15,26 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(devtools)
-#library(dassimEcoli)
+library(dassimEcoli)
 library(ggtree)
 library(ape)
 library(phytools)
-library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(ggplot2)
+library(forcats)
+library(stringr)
 library(blantyreESBL)
 library(lubridate)
 library(ggnewscale)
-library(countrycode)
-#library(viridis)
-library(blantyreESBL)
 library(kableExtra)
 library(patchwork)
 library(here)
-library(ggnewscale)
 library(scales)
 library(ggstance)
-load_all()
 
-write_figs <- TRUE
+write_figs <- FALSE
 
 if (write_figs) {
   dir.create(here("figures"))
@@ -222,13 +221,13 @@ malawi_treeplot
 
 if (write_figs) {
   ggsave(
-    here("figures/SUPP_F1_malawi_treeplot.svg"),
+    here("figures/malawi_treeplot.svg"),
     malawi_treeplot,
     width = 9,
     height = 9
   )
   ggsave(
-    here("figures/SUPP_F1_malawi_treeplot.pdf"),
+    here("figures/malawi_treeplot.pdf"),
     malawi_treeplot,
     width = 9,
     height = 9
@@ -350,13 +349,13 @@ amrplot
 
 if (write_figs) {
   ggsave(
-    filename = here("figures/FIG_2_amr_plot.pdf"),
+    filename = here("figures/amr_plot.pdf"),
     plot = amrplot,
     width = 6,
     height = 10
   )
   ggsave(
-    filename = here("figures/FIG_2_amr_plot.svg"),
+    filename = here("figures/amr_plot.svg"),
     plot = amrplot,
     width = 6,
     height = 10
