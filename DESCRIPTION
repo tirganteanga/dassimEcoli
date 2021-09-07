@@ -1,15 +1,14 @@
 Package: dassimEcoli
-Title: What the Package Does (One Line, Title Case)
+Title: Data And Code To Reproduce Genomic Analysis Of Carried ESBL E. coli in Blantyre, Malawi
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Joseph",
+           family = "Lewis",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+           email = "joseph.lewis@lstmed.ac.uk",
+           comment = c(ORCID = "0000-0002-3837-5188"))
+Description: The dassimEcoli R package contains data and code to replicate the analysis of the manuscript: "Genomic diversity of carried Extended spectrum beta-lactamase producing E coli isolates in Blantyre, Malawi".
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
@@ -20,3 +19,20 @@ Suggests:
 VignetteBuilder: knitr
 Depends: 
     R (>= 2.10)
+Imports: 
+    phytools,
+    ape,
+    ggtree,
+    dplyr,
+    tidyr,
+    readr,
+    ggplot2,
+    forcats,
+    stringr,
+    blantyreESBL,
+    lubridate,
+    ggnewscale,
+    kableExtra,
+    patchwork,
+    here,
+    ggstance
