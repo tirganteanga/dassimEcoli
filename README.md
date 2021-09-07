@@ -11,8 +11,8 @@ analysis of the manuscript:
 
 <br />
 
-*Genomic and diversity of carried *E coli* isolates in Blantyre, Malawi
-*
+*Genomic diversity of carried Extended spectrum beta-lactamase producing
+*E coli* isolates in Blantyre, Malawi*
 
 <br />
 
