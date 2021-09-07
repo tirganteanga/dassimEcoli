@@ -24,28 +24,7 @@ vf %>%
 use_data(dassimEcoli_BTEcoli.virulence, overwrite = TRUE)
 
 
-dassimEcoli_BTEcoli.virulence %>% 
-  filter(grepl("stx|ltcA|sta|eae|aatA|aggR|aaiC|ipaH|ipaD", ref_seq)) %>% 
-  mutate(ref_seq = gsub("_[0-9|A-Z|a-z]*$","", ref_seq)) %>% 
-  mutate(Pathotype = case_when(
-    grepl("stx", ref_seq) & grepl("eae", ref_seq) ~ "EHEC",
-    grepl("stx", ref_seq) ~ "STEC",
-    grepl("eae", ref_seq) ~ "aEPEC/EPEC",
-    grepl("aatA|aggR|aaiC", ref_seq) ~ "EAEC",
-    grepl("ltcA|sta", ref_seq) ~ "ETEC",
-    grepl("ipaH|ipaD", ref_seq) ~ "EIEC",
-    TRUE ~ NA_character_ )) %>% 
-  select(name, Pathotype) %>% 
-  unique() %>% 
-  #pivot_wider(id_cols = name, values_from = pathotype, names_from = pathotype,
-  #            values_fn = length, values_fill = NA_integer_) %>% 
-  mutate(name = gsub("#", "_", name)) %>%  
-  as.data.frame() ->
-  vir
 
-rownames(vir) <- vir$name           
-
-vir
 
 
 
@@ -129,6 +108,14 @@ btESBL_sequence_sample_metadata %>%
       #            values_fn = length, values_fill = NA_integer_) %>% 
       mutate(name = gsub("#", "_", name)),
     by = c("lane" = "name")
+  ) %>% 
+  left_join(
+  # add in popPUNK clusters from global collection comparison
+  read_csv(here("data-raw/popPUNK_clusters.csv")) %>% 
+  mutate(
+    Taxon = gsub("#","_",
+                 gsub("\\..*$","", Taxon))),
+  by = c("lane" = "Taxon")
   ) -> 
   dassimEcoli_BTEcoli.accession
 
@@ -200,3 +187,45 @@ dassimEcoli_NCBI.betalactamases <-
   )
 
 use_data(dassimEcoli_NCBI.betalactamases, overwrite = TRUE)
+
+# global metadata table --------------------
+
+
+read_csv("data-raw/F1_genome_metadata.csv") ->
+  dassimEcoli_Horesh.metadata
+
+use_data(dassimEcoli_Horesh.metadata, overwrite = TRUE)
+
+# TODO - merge in accessions
+
+read_csv(here("data-raw/musicha_Ecoli_MetaData.csv")) %>%
+  mutate(Lane = gsub("#", "_", Lane)) %>%
+  left_join(
+    left_join(read_csv(here( "data-raw/musicha_mlst.csv" )),
+      read_csv( here( "data-raw/musicha_pgroup.csv" )),
+      by = c("lane" = "V1")) %>%
+      select(lane, ST, phylogroup) %>% 
+      left_join( 
+        read_csv(here( "data-raw/popPUNK_clusters.csv" )) %>%
+          mutate(Taxon = gsub(
+            "#", "_",
+            gsub("\\..*$", "", Taxon))),
+        by = c("lane" = "Taxon")),
+    by = c("Lane" = "lane") 
+  ) %>% 
+  left_join(
+    read_csv("data-raw/musicha_accession.csv") %>% 
+      transmute(Accession = `Lane accession`,
+                Lane = gsub("#","_", `Lane name`)),
+    by = "Lane") -> dassimEcoli_Musicha.metadata
+
+
+use_data(dassimEcoli_Musicha.metadata, overwrite = TRUE)
+
+# global tree -----------------------
+
+ape::read.tree(here("data-raw/IQTREE_globaltree.treefile")) -> 
+  dassimEcoli_globaltree
+phytools::midpoint.root(dassimEcoli_globaltree) -> dassimEcoli_globaltree
+
+use_data(dassimEcoli_globaltree, overwrite = TRUE)
