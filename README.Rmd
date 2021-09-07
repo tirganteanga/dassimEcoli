@@ -51,5 +51,5 @@ This analysis is available as a package vignette; this can be built when downloa
 devtools::install_github("https://github.com/joelewis101/dassimEcoli", build_vignettes = TRUE )
 ```
 
-Alternatively the source code for the vignette is `analysis.Rmd` in the `vignettes/` folder of this repo or the  [pkgdown](https://joelewis101.github.io/dassimKlebs/) site for this package has a rendered version, as well as variable definitions for the datasets.
+Alternatively the source code for the vignette is `analysis.Rmd` in the `vignettes/` folder of this repo or the  [pkgdown](https://joelewis101.github.io/dassimEcoli/) site for this package has a rendered version, as well as variable definitions for the datasets.
 

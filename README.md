@@ -51,6 +51,6 @@ devtools::install_github("https://github.com/joelewis101/dassimEcoli", build_vig
 
 Alternatively the source code for the vignette is `analysis.Rmd` in the
 `vignettes/` folder of this repo or the
-[pkgdown](https://joelewis101.github.io/dassimKlebs/) site for this
+[pkgdown](https://joelewis101.github.io/dassimEcoli/) site for this
 package has a rendered version, as well as variable definitions for the
 datasets.
