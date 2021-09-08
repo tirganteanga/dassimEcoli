@@ -363,6 +363,88 @@ if (write_figs) {
 }
 ```
 
+#### AMR mapped to tree
+
+```{r amr-maptotree, fig.width = 12, fig.height = 6, fig.cap = "AMR determinants mapped back to phylogeny"}
+
+amr %>% 
+  # filter(!gene %in% c("OqxA", "OqxB", "FosA")) %>% 
+  # remove FosA as not in KpI which we are plottingh
+  mutate(
+         gene = gsub("_","-", gene)) %>% 
+  group_by(class) %>% 
+  mutate(n_class = length(class)) %>% 
+  ungroup() %>% 
+  group_by(gene) %>% 
+  mutate(n_gene = length(gene)) %>% 
+  arrange(desc(n_class), desc(n_gene)) %>% 
+  select(-n_class, -n_gene) %>% 
+  pivot_wider(id_cols = sample,
+              values_from = class,
+              names_from = gene) %>% 
+
+  as.data.frame() ->
+  amr.ariba.maptotree
+
+
+amr %>% 
+    # filter(!gene %in% c("OqxA", "OqxB", "FosA")) %>% 
+    mutate(
+           gene = gsub("_","-", gene)) %>% 
+    group_by(class) %>% 
+    mutate(n_class = length(class)) %>% 
+    ungroup() %>% 
+    group_by(gene) %>% 
+    mutate(n_gene = length(gene)) %>% 
+    arrange(desc(n_class), desc(n_gene)) %>% pull(class) %>% 
+  unique() -> class_order
+
+rownames(amr.ariba.maptotree) <- amr.ariba.maptotree$sample
+
+colz = hue_pal()(13)
+names(colz) <- sort(unique(amr %>% 
+                             filter(class != "Fosfomycin") %>% 
+                             pull(class)))
+
+ggtree(blantyreESBL::btESBL_coregene_tree_esco) %>% 
+#ggtree(tree) %>% 
+    gheatmap(
+        select(amr.ariba.maptotree,-sample),
+        width = 5, 
+        color = NA, 
+        font.size = 3, 
+        colnames_angle = 90, 
+        colnames_position = "top", 
+        colnames_offset_y = 0,
+        hjust = 0,
+        offset = 0
+    ) +
+  ylim(NA, 500) +
+  scale_fill_manual(name = "Class", values = colz, 
+                    breaks = class_order,
+                    na.translate = FALSE) ->
+  malawi_tree_with_amr
+
+malawi_tree_with_amr
+
+
+if (write_figs) {
+  
+  ggsave(
+    here("figures/malawi_treeplot_with_amr.pdf"),
+    malawi_tree_with_amr,
+    width = 12,
+    height = 6)
+  ggsave(
+    here("figures/malawi_treeplot_with_amr.svg"),
+    malawi_tree_with_amr,
+    width = 12,
+    height = 6)
+  
+}
+```
+
+
 ### Malawi isolates in a global context
 
 #### Phylogeny
