@@ -237,7 +237,7 @@ if (write_figs) {
 ```
 
 
-### AMR determinents
+### AMR determinants
 
 ```{r amrplot, fig.width= 6, fig.height=10}
 
