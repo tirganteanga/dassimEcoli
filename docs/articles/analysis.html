@@ -11276,9 +11276,9 @@ SUPPLEMENTARY FIGURE 1: Midpoint-rooted maximum-likelohood phylogeny of study is
   <span class="op">)</span>
 <span class="op">}</span></code></pre></div>
 </div>
-<div id="amr-determinents" class="section level3">
+<div id="amr-determinants" class="section level3">
 <h3 class="hasAnchor">
-<a href="#amr-determinents" class="anchor"></a>AMR determinents</h3>
+<a href="#amr-determinants" class="anchor"></a>AMR determinants</h3>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 
@@ -11403,6 +11403,97 @@ SUPPLEMENTARY FIGURE 1: Midpoint-rooted maximum-likelohood phylogeny of study is
     height <span class="op">=</span> <span class="fl">10</span>
   <span class="op">)</span>
 <span class="op">}</span></code></pre></div>
+<div id="amr-mapped-to-tree" class="section level4">
+<h4 class="hasAnchor">
+<a href="#amr-mapped-to-tree" class="anchor"></a>AMR mapped to tree</h4>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
+<span class="va">amr</span> <span class="op">%&gt;%</span> 
+  <span class="co"># filter(!gene %in% c("OqxA", "OqxB", "FosA")) %&gt;% </span>
+  <span class="co"># remove FosA as not in KpI which we are plottingh</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>
+         gene <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">"_"</span>,<span class="st">"-"</span>, <span class="va">gene</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">class</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>n_class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">class</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">gene</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>n_gene <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">gene</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="va">n_class</span><span class="op">)</span>, <span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="va">n_gene</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">n_class</span>, <span class="op">-</span><span class="va">n_gene</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html">pivot_wider</a></span><span class="op">(</span>id_cols <span class="op">=</span> <span class="va">sample</span>,
+              values_from <span class="op">=</span> <span class="va">class</span>,
+              names_from <span class="op">=</span> <span class="va">gene</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+
+  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-&gt;</span>
+  <span class="va">amr.ariba.maptotree</span>
+
+
+<span class="va">amr</span> <span class="op">%&gt;%</span> 
+    <span class="co"># filter(!gene %in% c("OqxA", "OqxB", "FosA")) %&gt;% </span>
+    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>
+           gene <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">"_"</span>,<span class="st">"-"</span>, <span class="va">gene</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">class</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>n_class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">class</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">gene</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>n_gene <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">gene</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="va">n_class</span><span class="op">)</span>, <span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="va">n_gene</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html">pull</a></span><span class="op">(</span><span class="va">class</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">class_order</span>
+
+<span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">amr.ariba.maptotree</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">amr.ariba.maptotree</span><span class="op">$</span><span class="va">sample</span>
+
+<span class="va">colz</span> <span class="op">=</span> <span class="fu"><a href="https://scales.r-lib.org/reference/hue_pal.html">hue_pal</a></span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">13</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">colz</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">amr</span> <span class="op">%&gt;%</span> 
+                             <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">class</span> <span class="op">!=</span> <span class="st">"Fosfomycin"</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+                             <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html">pull</a></span><span class="op">(</span><span class="va">class</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/pkg/ggtree/man/ggtree.html">ggtree</a></span><span class="op">(</span><span class="fu">blantyreESBL</span><span class="fu">::</span><span class="va">btESBL_coregene_tree_esco</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+<span class="co">#ggtree(tree) %&gt;% </span>
+    <span class="fu"><a href="https://rdrr.io/pkg/ggtree/man/gheatmap.html">gheatmap</a></span><span class="op">(</span>
+        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">amr.ariba.maptotree</span>,<span class="op">-</span><span class="va">sample</span><span class="op">)</span>,
+        width <span class="op">=</span> <span class="fl">5</span>, 
+        color <span class="op">=</span> <span class="cn">NA</span>, 
+        font.size <span class="op">=</span> <span class="fl">3</span>, 
+        colnames_angle <span class="op">=</span> <span class="fl">90</span>, 
+        colnames_position <span class="op">=</span> <span class="st">"top"</span>, 
+        colnames_offset_y <span class="op">=</span> <span class="fl">0</span>,
+        hjust <span class="op">=</span> <span class="fl">0</span>,
+        offset <span class="op">=</span> <span class="fl">0</span>
+    <span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">ylim</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">500</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_fill_manual</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Class"</span>, values <span class="op">=</span> <span class="va">colz</span>, 
+                    breaks <span class="op">=</span> <span class="va">class_order</span>,
+                    na.translate <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">-&gt;</span>
+  <span class="va">malawi_tree_with_amr</span>
+<span class="co">#&gt; Scale for 'y' is already present. Adding another scale for 'y', which will</span>
+<span class="co">#&gt; replace the existing scale.</span>
+<span class="co">#&gt; Scale for 'fill' is already present. Adding another scale for 'fill', which</span>
+<span class="co">#&gt; will replace the existing scale.</span>
+
+<span class="va">malawi_tree_with_amr</span></code></pre></div>
+<div class="figure">
+<img src="analysis_files/figure-html/amr-maptotree-1.png" alt="AMR determinants mapped back to phylogeny" width="1152"><p class="caption">
+AMR determinants mapped back to phylogeny
+</p>
+</div>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
+
+<span class="kw">if</span> <span class="op">(</span><span class="va">write_figs</span><span class="op">)</span> <span class="op">{</span>
+  
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html">ggsave</a></span><span class="op">(</span>
+    <span class="fu"><a href="https://here.r-lib.org//reference/here.html">here</a></span><span class="op">(</span><span class="st">"figures/malawi_treeplot_with_amr.pdf"</span><span class="op">)</span>,
+    <span class="va">malawi_tree_with_amr</span>,
+    width <span class="op">=</span> <span class="fl">12</span>,
+    height <span class="op">=</span> <span class="fl">6</span><span class="op">)</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html">ggsave</a></span><span class="op">(</span>
+    <span class="fu"><a href="https://here.r-lib.org//reference/here.html">here</a></span><span class="op">(</span><span class="st">"figures/malawi_treeplot_with_amr.svg"</span><span class="op">)</span>,
+    <span class="va">malawi_tree_with_amr</span>,
+    width <span class="op">=</span> <span class="fl">12</span>,
+    height <span class="op">=</span> <span class="fl">6</span><span class="op">)</span>
+  
+<span class="op">}</span></code></pre></div>
+</div>
 </div>
 <div id="malawi-isolates-in-a-global-context" class="section level3">
 <h3 class="hasAnchor">
@@ -11410,7 +11501,7 @@ SUPPLEMENTARY FIGURE 1: Midpoint-rooted maximum-likelohood phylogeny of study is
 <div id="phylogeny" class="section level4">
 <h4 class="hasAnchor">
 <a href="#phylogeny" class="anchor"></a>Phylogeny</h4>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
  <span class="co">#prepare metadata ----------</span>
 <span class="co"># lookup list of horesh merged clusters </span>
@@ -11521,7 +11612,7 @@ SUPPLEMENTARY FIGURE 1: Midpoint-rooted maximum-likelohood phylogeny of study is
 
 <span class="va">df_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="va">df_all</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">df_all</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">df_all</span><span class="op">$</span><span class="va">Taxon</span>  </code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 <span class="co">#define color palettes</span>
 
@@ -11929,7 +12020,7 @@ SUPPLEMENTARY FIGURE 1: Midpoint-rooted maximum-likelohood phylogeny of study is
 A: Malawian E. coli isolates in a global phylogeny. All genomes from Musicha et al along with 500 context genomes from Horesh et al are included. Heatmaps show Phylogroup, year of collection, continent of collection and country (Malawi vs other). Highlighted areas and subtrees B-D show the phylogenetic context of the three commonest STs in this study: ST410 (B), ST167 (C) and ST131 (D). The tree tips in the subtree plots are coloured by popPUNK cluster assignment, with novel clusters that were not identified in the original Horesh collection given no color.
 </p>
 </div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 <span class="kw">if</span> <span class="op">(</span><span class="va">write_figs</span><span class="op">)</span> <span class="op">{</span>
   
@@ -11949,7 +12040,7 @@ A: Malawian E. coli isolates in a global phylogeny. All genomes from Musicha et 
 <div id="poppunk-clusters" class="section level4">
 <h4 class="hasAnchor">
 <a href="#poppunk-clusters" class="anchor"></a>PopPUNK clusters</h4>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 
 <span class="va">df_all</span> <span class="op">%&gt;%</span> 
@@ -12058,7 +12149,7 @@ A: Malawian E. coli isolates in a global phylogeny. All genomes from Musicha et 
 PopPUNK cluster assignments of isolates from this study, using the Horesh et al database. A: Proportion of samples assigned to a given cluster for this study (left) and the Horesh collection (right); clusters are ordered numerically which by definition is form largest to smallest in the Horesh collection. B: Cumulative proportion of isolates with cluster membership, with clusters again ordered numerically (i.e. largest to smallest). Dotted line indicates the end of clusters defined in the original Horesh popPUNK database; clusters to the right of this line are newly defined in the isolates in this study.
 </p>
 </div>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 <span class="kw">if</span> <span class="op">(</span><span class="va">write_figs</span><span class="op">)</span> <span class="op">{</span>
   
@@ -12074,7 +12165,7 @@ PopPUNK cluster assignments of isolates from this study, using the Horesh et al 
     height <span class="op">=</span> <span class="fl">6</span><span class="op">)</span>
   
 <span class="op">}</span></code></pre></div>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 
 <span class="va">df_all</span> <span class="op">%&gt;%</span>
@@ -15105,7 +15196,7 @@ ST3856 (1.00)
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 <span class="kw">if</span> <span class="op">(</span><span class="va">write_figs</span><span class="op">)</span> <span class="op">{</span>
  <span class="fu"><a href="https://readr.tidyverse.org/reference/write_delim.html">write_csv</a></span><span class="op">(</span><span class="va">df_clusttab</span> <span class="op">%&gt;%</span> 
@@ -15122,7 +15213,7 @@ ST3856 (1.00)
  <span class="op">)</span>
    
 <span class="op">}</span></code></pre></div>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 <span class="co"># bits and bobs to calculate for manuscript</span>
 
