@@ -11407,9 +11407,9 @@ SUPPLEMENTARY FIGURE 1: Midpoint-rooted maximum-likelohood phylogeny of study is
 <div id="malawi-isolates-in-a-global-context" class="section level3">
 <h3 class="hasAnchor">
 <a href="#malawi-isolates-in-a-global-context" class="anchor"></a>Malawi isolates in a global context</h3>
-<div id="phlogeny" class="section level4">
+<div id="phylogeny" class="section level4">
 <h4 class="hasAnchor">
-<a href="#phlogeny" class="anchor"></a>Phlogeny</h4>
+<a href="#phylogeny" class="anchor"></a>Phylogeny</h4>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
  <span class="co">#prepare metadata ----------</span>
@@ -11477,7 +11477,8 @@ SUPPLEMENTARY FIGURE 1: Midpoint-rooted maximum-likelohood phylogeny of study is
         <span class="fu"><a href="https://rdrr.io/r/base/grep.html">grepl</a></span><span class="op">(</span><span class="st">"s"</span>, <span class="va">Year</span><span class="op">)</span>  <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">"s"</span>, <span class="st">""</span>, <span class="va">Year</span><span class="op">)</span><span class="op">)</span>,
         <span class="fu"><a href="https://rdrr.io/r/base/grep.html">grepl</a></span><span class="op">(</span><span class="st">"-"</span>, <span class="va">Year</span><span class="op">)</span> <span class="op">~</span>  <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">"-.*$"</span>, <span class="st">""</span>, <span class="va">Year</span><span class="op">)</span><span class="op">)</span>,
         <span class="cn">TRUE</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_trim.html">str_trim</a></span><span class="op">(</span><span class="va">Year</span><span class="op">)</span><span class="op">)</span>
-      <span class="op">)</span>
+      <span class="op">)</span>,
+      Pathotype <span class="op">=</span> <span class="va">Pathotype</span>
     <span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>Continent <span class="op">=</span>
                  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html">case_when</a></span><span class="op">(</span>
                    <span class="fu"><a href="https://rdrr.io/r/base/grep.html">grepl</a></span><span class="op">(</span><span class="st">"America"</span>, <span class="va">Continent</span><span class="op">)</span> <span class="op">~</span> <span class="st">"Americas"</span>,
@@ -12073,6 +12074,3158 @@ PopPUNK cluster assignments of isolates from this study, using the Horesh et al 
     height <span class="op">=</span> <span class="fl">6</span><span class="op">)</span>
   
 <span class="op">}</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
+
+<span class="va">df_all</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">study</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"dassim"</span>, <span class="st">"horesh"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">study</span>, <span class="va">Cluster</span>, <span class="va">ST</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span>n_ST <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html">n</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">study</span>, <span class="va">Cluster</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>n_cluster <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">n_ST</span><span class="op">)</span><span class="op">)</span>  <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span>
+    cluster_size <span class="op">=</span> <span class="va">n_cluster</span>,
+            STprop <span class="op">=</span> <span class="va">n_ST</span><span class="op">/</span><span class="va">n_cluster</span>,
+            STpropstr <span class="op">=</span>
+              <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"ST"</span>, <span class="va">ST</span>,<span class="st">" ("</span>,
+              <span class="fu"><a href="https://rdrr.io/r/base/formatc.html">formatC</a></span><span class="op">(</span><span class="va">n_ST</span> <span class="op">/</span> <span class="va">n_cluster</span>, <span class="fl">2</span>, format <span class="op">=</span> <span class="st">"f"</span><span class="op">)</span>, <span class="st">")"</span><span class="op">)</span>,
+    <span class="op">)</span>  <span class="op">-&gt;</span>
+  <span class="va">df_clusttab</span>
+<span class="co">#&gt; `summarise()` has grouped output by 'study', 'Cluster'. You can override using the `.groups` argument.</span>
+<span class="co">#&gt; `summarise()` has grouped output by 'study', 'Cluster'. You can override using the `.groups` argument.</span>
+
+<span class="va">df_clusttab</span><span class="op">$</span><span class="va">STpropstr</span> <span class="op">&lt;-</span> 
+  <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">df_clusttab</span><span class="op">$</span><span class="va">STpropstr</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span>
+    <span class="va">df_clusttab</span><span class="op">$</span><span class="va">STpropstr</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html">order</a></span><span class="op">(</span><span class="va">df_clusttab</span><span class="op">$</span><span class="va">STprop</span>,
+                                decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
+    <span class="op">)</span>
+
+<span class="va">df_clusttab</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">STprop</span> <span class="op">&gt;=</span> <span class="fl">0.01</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html">pivot_wider</a></span><span class="op">(</span>
+    id_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">Cluster</span><span class="op">)</span>,
+   names_from <span class="op">=</span> <span class="va">study</span>,
+   values_from <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">cluster_size</span>,<span class="va">STpropstr</span><span class="op">)</span>,
+   values_fn <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span> STpropstr <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>,collapse <span class="op">=</span> <span class="st">";"</span><span class="op">)</span>,
+                     cluster_size <span class="op">=</span> <span class="va">unique</span><span class="op">)</span>,
+   values_fill <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>STpropstr <span class="op">=</span> <span class="st">"-"</span>,
+                      cluster_size <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>
+     <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="va">cluster_size_dassim</span><span class="op">)</span>, <span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="va">cluster_size_horesh</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">cluster_size_dassim</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">left_join</a></span><span class="op">(</span>
+    <span class="va">df_all</span> <span class="op">%&gt;%</span>
+    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">study</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"dassim"</span>, <span class="st">"horesh"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">Cluster</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span>pgroup <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="va">Phylogroup</span><span class="op">)</span>, decreasing<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">-&gt;</span>
+  <span class="va">df_clusttab</span>
+<span class="co">#&gt; Joining, by = "Cluster"</span>
+
+
+<span class="va">df_all</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">study</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"dassim"</span>, <span class="st">"horesh"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">study</span>, <span class="va">Cluster</span>, <span class="va">Continent</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span>n_continent <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html">n</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">study</span>, <span class="va">Cluster</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>n_cluster <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">n_continent</span><span class="op">)</span><span class="op">)</span>  <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span>
+    cluster_size <span class="op">=</span> <span class="va">n_cluster</span>,
+            contprop <span class="op">=</span> <span class="va">n_continent</span><span class="op">/</span><span class="va">n_cluster</span>,
+            contpropstr <span class="op">=</span>
+              <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span> <span class="va">Continent</span>,<span class="st">" ("</span>,
+              <span class="fu"><a href="https://rdrr.io/r/base/formatc.html">formatC</a></span><span class="op">(</span><span class="va">n_continent</span> <span class="op">/</span> <span class="va">n_cluster</span>, <span class="fl">2</span>, format <span class="op">=</span> <span class="st">"f"</span><span class="op">)</span>, <span class="st">")"</span><span class="op">)</span>,
+    <span class="op">)</span>  <span class="op">-&gt;</span>
+  <span class="va">df_clust.cont</span>
+<span class="co">#&gt; `summarise()` has grouped output by 'study', 'Cluster'. You can override using the `.groups` argument.</span>
+<span class="co">#&gt; `summarise()` has grouped output by 'study', 'Cluster'. You can override using the `.groups` argument.</span>
+
+<span class="va">df_clust.cont</span><span class="op">$</span><span class="va">contpropstr</span> <span class="op">&lt;-</span> 
+  <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">df_clust.cont</span><span class="op">$</span><span class="va">contpropstr</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span>
+    <span class="va">df_clust.cont</span><span class="op">$</span><span class="va">contpropstr</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html">order</a></span><span class="op">(</span><span class="va">df_clust.cont</span><span class="op">$</span><span class="va">contprop</span>,
+                                decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
+    <span class="op">)</span>
+
+<span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">left_join</a></span><span class="op">(</span><span class="va">df_clusttab</span>,
+<span class="va">df_clust.cont</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html">pivot_wider</a></span><span class="op">(</span>
+    id_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">Cluster</span><span class="op">)</span>,
+   names_from <span class="op">=</span> <span class="va">study</span>,
+   values_from <span class="op">=</span> <span class="va">contpropstr</span>,
+   values_fn <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>,collapse <span class="op">=</span> <span class="st">";"</span><span class="op">)</span>,
+   values_fill <span class="op">=</span> <span class="st">"-"</span>,
+  <span class="op">)</span>
+<span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="va">cluster_size_dassim</span><span class="op">)</span>, <span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="va">cluster_size_horesh</span><span class="op">)</span><span class="op">)</span> <span class="op">-&gt;</span>
+  <span class="va">df_clusttab</span>
+<span class="co">#&gt; Joining, by = "Cluster"</span>
+
+<span class="va">df_all</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">study</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"dassim"</span>, <span class="st">"horesh"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>Pathotype <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">" \\(predicted\\)"</span>,<span class="st">""</span>, <span class="va">Pathotype</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">study</span>, <span class="va">Cluster</span>, <span class="va">Pathotype</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span>n_path <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html">n</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">study</span>, <span class="va">Cluster</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>n_cluster <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">n_path</span><span class="op">)</span><span class="op">)</span>  <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span>
+    cluster_size <span class="op">=</span> <span class="va">n_cluster</span>,
+            pathprop <span class="op">=</span> <span class="va">n_path</span><span class="op">/</span><span class="va">n_cluster</span>,
+            pathpropstr <span class="op">=</span>
+              <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span> <span class="va">Pathotype</span>,<span class="st">" ("</span>,
+              <span class="fu"><a href="https://rdrr.io/r/base/formatc.html">formatC</a></span><span class="op">(</span><span class="va">n_path</span> <span class="op">/</span> <span class="va">n_cluster</span>, <span class="fl">2</span>, format <span class="op">=</span> <span class="st">"f"</span><span class="op">)</span>, <span class="st">")"</span><span class="op">)</span>,
+    <span class="op">)</span>  <span class="op">-&gt;</span>
+  <span class="va">df_clust.path</span>
+<span class="co">#&gt; `summarise()` has grouped output by 'study', 'Cluster'. You can override using the `.groups` argument.</span>
+<span class="co">#&gt; `summarise()` has grouped output by 'study', 'Cluster'. You can override using the `.groups` argument.</span>
+
+<span class="va">df_clust.path</span><span class="op">$</span><span class="va">pathpropstr</span> <span class="op">&lt;-</span> 
+  <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">df_clust.path</span><span class="op">$</span><span class="va">pathpropstr</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span>
+    <span class="va">df_clust.path</span><span class="op">$</span><span class="va">pathpropstr</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html">order</a></span><span class="op">(</span><span class="va">df_clust.path</span><span class="op">$</span><span class="va">pathprop</span>,
+                                decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
+    <span class="op">)</span>
+
+
+<span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">left_join</a></span><span class="op">(</span><span class="va">df_clusttab</span>,
+<span class="va">df_clust.path</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html">pivot_wider</a></span><span class="op">(</span>
+    id_cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">Cluster</span><span class="op">)</span>,
+   names_from <span class="op">=</span> <span class="va">study</span>,
+   values_from <span class="op">=</span> <span class="va">pathpropstr</span>,
+   values_fn <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>,collapse <span class="op">=</span> <span class="st">";"</span><span class="op">)</span>,
+   values_fill <span class="op">=</span> <span class="st">"-"</span>,
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">transmute</a></span><span class="op">(</span>
+    Cluster <span class="op">=</span> <span class="va">Cluster</span>,
+    horesh_pathotype <span class="op">=</span> <span class="va">horesh</span>,
+<span class="op">)</span><span class="op">)</span> <span class="op">-&gt;</span>
+  <span class="va">df_clusttab</span>
+<span class="co">#&gt; Joining, by = "Cluster"</span>
+
+
+
+<span class="va">df_clusttab</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">Cluster</span>,
+         <span class="va">pgroup</span>,
+         <span class="va">cluster_size_dassim</span>,
+         <span class="va">STpropstr_dassim</span>,
+         <span class="va">cluster_size_horesh</span>,
+         <span class="va">STpropstr_horesh</span>,
+         <span class="va">horesh</span>,
+         <span class="va">horesh_pathotype</span>
+         <span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kbl.html">kbl</a></span><span class="op">(</span>caption <span class="op">=</span>
+        <span class="st">"Cluster assigment of samples from this study compared to Horesh collection"</span>,
+      col.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Cluster"</span>,<span class="st">"Phylogroup"</span>,
+                    <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>
+                    <span class="st">"n isolates"</span>,
+                    <span class="st">"STs"</span><span class="op">)</span>,<span class="fl">2</span><span class="op">)</span>,<span class="st">"Location"</span>, <span class="st">"Pathotype"</span><span class="op">)</span>
+      <span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html">kable_classic</a></span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/add_header_above.html">add_header_above</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">" "</span> <span class="op">=</span> <span class="fl">2</span>, <span class="st">"This Study"</span> <span class="op">=</span> <span class="fl">2</span>, <span class="st">"Horesh Collection"</span> <span class="op">=</span> <span class="fl">4</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<table class="table  lightable-classic">
+<caption>
+Cluster assigment of samples from this study compared to Horesh collection
+</caption>
+<thead>
+<tr>
+<th style="empty-cells: hide;" colspan="2">
+</th>
+<th style="padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
+<div style="border-bottom: 1px solid #111111; margin-bottom: -1px; ">
+This Study
+</div>
+</th>
+<th style="padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="4">
+<div style="border-bottom: 1px solid #111111; margin-bottom: -1px; ">
+Horesh Collection
+</div>
+</th>
+</tr>
+<tr>
+<th style="text-align:left;">
+Cluster
+</th>
+<th style="text-align:left;">
+Phylogroup
+</th>
+<th style="text-align:right;">
+n isolates
+</th>
+<th style="text-align:left;">
+STs
+</th>
+<th style="text-align:right;">
+n isolates
+</th>
+<th style="text-align:left;">
+STs
+</th>
+<th style="text-align:left;">
+Location
+</th>
+<th style="text-align:left;">
+Pathotype
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+B2
+</td>
+<td style="text-align:right;">
+53
+</td>
+<td style="text-align:left;">
+ST131 (1.00)
+</td>
+<td style="text-align:right;">
+781
+</td>
+<td style="text-align:left;">
+ST131 (0.99)
+</td>
+<td style="text-align:left;">
+Europe (0.73);Unknown (0.12);Americas (0.11);Oceania (0.03);Asia (0.00)
+</td>
+<td style="text-align:left;">
+ExPEC (0.54);Not determined (0.46)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+40_708
+</td>
+<td style="text-align:left;">
+C
+</td>
+<td style="text-align:right;">
+44
+</td>
+<td style="text-align:left;">
+ST410 (1.00)
+</td>
+<td style="text-align:right;">
+29
+</td>
+<td style="text-align:left;">
+ST23 (0.41);ST410 (0.34);ST2230 (0.07);ST369 (0.07);ST5491 (0.07);ST5286 (0.03)
+</td>
+<td style="text-align:left;">
+Europe (0.62);Americas (0.31);Asia (0.07)
+</td>
+<td style="text-align:left;">
+ExPEC (0.55);STEC (0.21);ETEC (0.17);Not determined (0.07)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+684
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+29
+</td>
+<td style="text-align:left;">
+ST44 (1.00)
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST44 (1.00)
+</td>
+<td style="text-align:left;">
+Europe (1.00)
+</td>
+<td style="text-align:left;">
+ExPEC (1.00)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+451
+</td>
+<td style="text-align:left;">
+B2
+</td>
+<td style="text-align:right;">
+27
+</td>
+<td style="text-align:left;">
+ST636 (1.00)
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST636 (1.00)
+</td>
+<td style="text-align:left;">
+Americas (1.00)
+</td>
+<td style="text-align:left;">
+ExPEC (1.00)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+434_505
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+24
+</td>
+<td style="text-align:left;">
+ST167 (0.92);ST10 (0.08)
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+ST10 (1.00)
+</td>
+<td style="text-align:left;">
+Americas (0.67);Europe (0.33)
+</td>
+<td style="text-align:left;">
+ExPEC (0.67);Not determined (0.33)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+44_579
+</td>
+<td style="text-align:left;">
+F
+</td>
+<td style="text-align:right;">
+17
+</td>
+<td style="text-align:left;">
+ST648 (1.00)
+</td>
+<td style="text-align:right;">
+26
+</td>
+<td style="text-align:left;">
+ST648 (1.00)
+</td>
+<td style="text-align:left;">
+Europe (0.42);Unknown (0.38);Americas (0.19)
+</td>
+<td style="text-align:left;">
+ExPEC (0.73);Not determined (0.27)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1186
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+17
+</td>
+<td style="text-align:left;">
+ST656 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+290
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+16
+</td>
+<td style="text-align:left;">
+ST46 (1.00)
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+ST46 (1.00)
+</td>
+<td style="text-align:left;">
+Americas (1.00)
+</td>
+<td style="text-align:left;">
+ExPEC (0.50);Not determined (0.50)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1187
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+15
+</td>
+<td style="text-align:left;">
+ST940 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+125
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+13
+</td>
+<td style="text-align:left;">
+ST617 (0.92);ST4981 (0.08)
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:left;">
+ST617 (1.00)
+</td>
+<td style="text-align:left;">
+Americas (0.71);Europe (0.29)
+</td>
+<td style="text-align:left;">
+ExPEC (0.57);Not determined (0.43)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1188
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:left;">
+ST167 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1110
+</td>
+<td style="text-align:left;">
+F
+</td>
+<td style="text-align:right;">
+11
+</td>
+<td style="text-align:left;">
+ST1722 (1.00)
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST1722 (1.00)
+</td>
+<td style="text-align:left;">
+Europe (1.00)
+</td>
+<td style="text-align:left;">
+ExPEC (1.00)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+288
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+9
+</td>
+<td style="text-align:left;">
+ST5824 (1.00)
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+ST227 (1.00)
+</td>
+<td style="text-align:left;">
+Americas (1.00)
+</td>
+<td style="text-align:left;">
+Not determined (1.00)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+20
+</td>
+<td style="text-align:left;">
+B2
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:left;">
+ST131 (1.00)
+</td>
+<td style="text-align:right;">
+48
+</td>
+<td style="text-align:left;">
+ST131 (0.96);ST5432 (0.02);ST5494 (0.02)
+</td>
+<td style="text-align:left;">
+Europe (0.75);Americas (0.12);Unknown (0.10);Oceania (0.02)
+</td>
+<td style="text-align:left;">
+ExPEC (0.71);Not determined (0.29)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+37
+</td>
+<td style="text-align:left;">
+D
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:left;">
+ST405 (1.00)
+</td>
+<td style="text-align:right;">
+27
+</td>
+<td style="text-align:left;">
+ST405 (0.96);ST964 (0.04)
+</td>
+<td style="text-align:left;">
+Europe (0.63);Americas (0.33);Asia (0.04)
+</td>
+<td style="text-align:left;">
+ExPEC (0.81);Not determined (0.11);ETEC (0.04);STEC (0.04)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1189
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:left;">
+ST1421 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+7
+</td>
+<td style="text-align:left;">
+D
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:left;">
+ST69 (1.00)
+</td>
+<td style="text-align:right;">
+174
+</td>
+<td style="text-align:left;">
+ST69 (0.94);ST106 (0.03)
+</td>
+<td style="text-align:left;">
+Europe (0.83);Americas (0.12);Unknown (0.05)
+</td>
+<td style="text-align:left;">
+ExPEC (0.79);Not determined (0.19);EAEC (0.02)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1190
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:left;">
+ST9847 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1191
+</td>
+<td style="text-align:left;">
+D
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:left;">
+ST38 (0.83);STNovel (0.17)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+92
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:left;">
+ST10 (1.00)
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:left;">
+ST10 (1.00)
+</td>
+<td style="text-align:left;">
+Europe (0.60);Americas (0.40)
+</td>
+<td style="text-align:left;">
+ExPEC (0.60);Not determined (0.40)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+164
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:left;">
+ST34 (1.00)
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:left;">
+ST34 (1.00)
+</td>
+<td style="text-align:left;">
+Africa (0.67);Europe (0.33)
+</td>
+<td style="text-align:left;">
+EPEC (0.67);Not determined (0.33)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+330
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:left;">
+ST101 (1.00)
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+ST101 (1.00)
+</td>
+<td style="text-align:left;">
+Europe (0.50);Unknown (0.50)
+</td>
+<td style="text-align:left;">
+Not determined (1.00)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1193
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:left;">
+ST10 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+77
+</td>
+<td style="text-align:left;">
+Unknown
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:left;">
+ST38 (1.00)
+</td>
+<td style="text-align:right;">
+11
+</td>
+<td style="text-align:left;">
+ST38 (0.73);ST315 (0.27)
+</td>
+<td style="text-align:left;">
+Europe (1.00)
+</td>
+<td style="text-align:left;">
+Not determined (0.82);ExPEC (0.18)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1195
+</td>
+<td style="text-align:left;">
+F
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:left;">
+ST6636 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1196
+</td>
+<td style="text-align:left;">
+D
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:left;">
+ST38 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:left;">
+B2
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+ST73 (1.00)
+</td>
+<td style="text-align:right;">
+463
+</td>
+<td style="text-align:left;">
+ST73 (0.94);ST104 (0.01)
+</td>
+<td style="text-align:left;">
+Europe (0.85);Americas (0.11);Unknown (0.03);Asia (0.00);Africa (0.00)
+</td>
+<td style="text-align:left;">
+ExPEC (0.83);Not determined (0.16);STEC (0.01);EAEC (0.00)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1194
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+ST48 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1197
+</td>
+<td style="text-align:left;">
+F
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+ST354 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1198
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+ST517 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1199
+</td>
+<td style="text-align:left;">
+F
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+ST354 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1200
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+ST617 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1201
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+ST46 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1202
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+ST10 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+122
+</td>
+<td style="text-align:left;">
+Unknown
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+ST443 (1.00)
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:left;">
+ST443 (1.00)
+</td>
+<td style="text-align:left;">
+Europe (0.83);Asia (0.17)
+</td>
+<td style="text-align:left;">
+Not determined (0.67);EPEC (0.17);ExPEC (0.17)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+328
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+ST224 (1.00)
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+ST224 (1.00)
+</td>
+<td style="text-align:left;">
+Americas (1.00)
+</td>
+<td style="text-align:left;">
+ExPEC (0.50);Not determined (0.50)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1205
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+ST617 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1206
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+ST3168 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1207
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+ST2705 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1208
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+ST424 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1209
+</td>
+<td style="text-align:left;">
+B2
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+ST219 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1210
+</td>
+<td style="text-align:left;">
+F
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+ST1722 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1211
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+ST1201 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1212
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+ST617 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1213
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+ST48 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+63
+</td>
+<td style="text-align:left;">
+Unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST38 (1.00)
+</td>
+<td style="text-align:right;">
+17
+</td>
+<td style="text-align:left;">
+ST38 (0.94);ST778 (0.06)
+</td>
+<td style="text-align:left;">
+Europe (0.59);Unknown (0.18);Americas (0.18);Asia (0.06)
+</td>
+<td style="text-align:left;">
+Not determined (0.53);ExPEC (0.47)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+112
+</td>
+<td style="text-align:left;">
+Unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST2089 (1.00)
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:left;">
+ST2089 (1.00)
+</td>
+<td style="text-align:left;">
+Europe (0.71);Africa (0.14);Asia (0.14)
+</td>
+<td style="text-align:left;">
+Not determined (0.71);EPEC (0.29)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+118
+</td>
+<td style="text-align:left;">
+Unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST167 (1.00)
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:left;">
+ST167 (1.00)
+</td>
+<td style="text-align:left;">
+Europe (1.00)
+</td>
+<td style="text-align:left;">
+Not determined (0.67);ExPEC (0.33)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+276_370
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST156 (1.00)
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+ST156 (0.67);ST348 (0.33)
+</td>
+<td style="text-align:left;">
+Americas (0.33);Europe (0.33);Asia (0.33)
+</td>
+<td style="text-align:left;">
+Not determined (0.67);ExPEC (0.33)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1162
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST224 (1.00)
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST224 (1.00)
+</td>
+<td style="text-align:left;">
+Europe (1.00)
+</td>
+<td style="text-align:left;">
+Not determined (1.00)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+776
+</td>
+<td style="text-align:left;">
+F
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST1485 (1.00)
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST1485 (1.00)
+</td>
+<td style="text-align:left;">
+Europe (1.00)
+</td>
+<td style="text-align:left;">
+Not determined (1.00)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1192
+</td>
+<td style="text-align:left;">
+D
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST391 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1235
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST1237 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1236
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST3489 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1237
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST4981 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1238
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST3580 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1239
+</td>
+<td style="text-align:left;">
+F
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST648 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1240
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST48 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1241
+</td>
+<td style="text-align:left;">
+Unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST167 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1242
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST191 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1243
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST2083 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1244
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST48 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1245
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST2077 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1246
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST2852 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1247
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST44 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1248
+</td>
+<td style="text-align:left;">
+Clade I or II
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST410 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1249
+</td>
+<td style="text-align:left;">
+Clade I or II
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST44 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1250
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST617 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1251
+</td>
+<td style="text-align:left;">
+D
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST38 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1252
+</td>
+<td style="text-align:left;">
+B2
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST131 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1253
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST1081 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1254
+</td>
+<td style="text-align:left;">
+F
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST1944 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1255
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+STNovel (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1256
+</td>
+<td style="text-align:left;">
+Unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST617 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1257
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST10 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1258
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+STNovel (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1259
+</td>
+<td style="text-align:left;">
+Unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST131 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1260
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST226 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1261
+</td>
+<td style="text-align:left;">
+D
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST38 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1262
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST10 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1263
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST155 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1264
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST617 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1265
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+STNovel (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1266
+</td>
+<td style="text-align:left;">
+D
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST349 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1267
+</td>
+<td style="text-align:left;">
+F
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST354 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1268
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST167 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1269
+</td>
+<td style="text-align:left;">
+B2
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+STNovel (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1270
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST1421 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1271
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST155 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1272
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST609 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1273
+</td>
+<td style="text-align:left;">
+B2
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST131 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1274
+</td>
+<td style="text-align:left;">
+F
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST405 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1275
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST155 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1276
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST906 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1277
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST617 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1278
+</td>
+<td style="text-align:left;">
+Unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST167 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1279
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST48 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1280
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST1303 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1281
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST6438 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1282
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST206 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1283
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST1146 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1284
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST46 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1285
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST401 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1286
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST44 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1287
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST10 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1288
+</td>
+<td style="text-align:left;">
+Unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST48 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1289
+</td>
+<td style="text-align:left;">
+B1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST155 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1290
+</td>
+<td style="text-align:left;">
+Unknown
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST10 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1291
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+ST3856 (1.00)
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+<td style="text-align:left;">
+<ul><li></ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
+<span class="kw">if</span> <span class="op">(</span><span class="va">write_figs</span><span class="op">)</span> <span class="op">{</span>
+ <span class="fu"><a href="https://readr.tidyverse.org/reference/write_delim.html">write_csv</a></span><span class="op">(</span><span class="va">df_clusttab</span> <span class="op">%&gt;%</span> 
+             <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">transmute</a></span><span class="op">(</span>
+               Cluster <span class="op">=</span> <span class="va">Cluster</span>,
+               Phylogroup <span class="op">=</span> <span class="va">pgroup</span>,
+               n_this_study <span class="op">=</span> <span class="va">cluster_size_dassim</span>,
+               STs_this_study <span class="op">=</span> <span class="va">STpropstr_dassim</span>,
+               n_horesh <span class="op">=</span> <span class="va">cluster_size_horesh</span>,
+               STs_horesh <span class="op">=</span> <span class="va">STpropstr_horesh</span>,
+               location_horesh <span class="op">=</span> <span class="va">horesh</span>,
+               pathotype_horesh <span class="op">=</span> <span class="va">horesh_pathotype</span><span class="op">)</span>,
+           <span class="fu"><a href="https://here.r-lib.org//reference/here.html">here</a></span><span class="op">(</span><span class="st">"tables/cluster_stats.csv"</span><span class="op">)</span>
+ <span class="op">)</span>
+   
+<span class="op">}</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
+<span class="co"># bits and bobs to calculate for manuscript</span>
+
+<span class="co"># how many clusters?</span>
+
+<span class="va">dassimEcoli_BTEcoli.accession</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">Cluster</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">tally</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co">#&gt; [1] 109</span>
+
+<span class="va">dassimEcoli_BTEcoli.accession</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">Cluster</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">tally</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span>
+    median_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>,
+    lq <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html">quantile</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">0.25</span><span class="op">)</span>,
+    uq <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html">quantile</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">0.75</span><span class="op">)</span>
+  <span class="op">)</span>
+<span class="co">#&gt; # A tibble: 1 × 3</span>
+<span class="co">#&gt;   median_size    lq    uq</span>
+<span class="co">#&gt;         &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;</span>
+<span class="co">#&gt; 1           1     1     3</span>
+
+
+<span class="va">dassimEcoli_BTEcoli.accession</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">Cluster</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">tally</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="op">-</span><span class="va">n</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 109 × 2</span>
+<span class="co">#&gt;    Cluster     n</span>
+<span class="co">#&gt;    &lt;chr&gt;   &lt;int&gt;</span>
+<span class="co">#&gt;  1 2          53</span>
+<span class="co">#&gt;  2 40_708     44</span>
+<span class="co">#&gt;  3 684        29</span>
+<span class="co">#&gt;  4 451        27</span>
+<span class="co">#&gt;  5 434_505    24</span>
+<span class="co">#&gt;  6 1186       17</span>
+<span class="co">#&gt;  7 44_579     17</span>
+<span class="co">#&gt;  8 290        16</span>
+<span class="co">#&gt;  9 1187       15</span>
+<span class="co">#&gt; 10 125        13</span>
+<span class="co">#&gt; # … with 99 more rows</span>
+
+<span class="va">dassimEcoli_BTEcoli.accession</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">Cluster</span>, <span class="va">ST</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">tally</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="op">-</span><span class="va">n</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 112 × 3</span>
+<span class="co">#&gt; # Groups:   Cluster [109]</span>
+<span class="co">#&gt;    Cluster ST        n</span>
+<span class="co">#&gt;    &lt;chr&gt;   &lt;chr&gt; &lt;int&gt;</span>
+<span class="co">#&gt;  1 2       131      53</span>
+<span class="co">#&gt;  2 40_708  410      44</span>
+<span class="co">#&gt;  3 684     44       29</span>
+<span class="co">#&gt;  4 451     636      27</span>
+<span class="co">#&gt;  5 434_505 167      22</span>
+<span class="co">#&gt;  6 1186    656      17</span>
+<span class="co">#&gt;  7 44_579  648      17</span>
+<span class="co">#&gt;  8 290     46       16</span>
+<span class="co">#&gt;  9 1187    940      15</span>
+<span class="co">#&gt; 10 1188    167      12</span>
+<span class="co">#&gt; # … with 102 more rows</span>
+
+<span class="va">df_all</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">study</span> <span class="op">==</span> <span class="st">"dassim"</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>numeric_cluster <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span>
+    <span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">"_.*$"</span>,<span class="st">""</span>,<span class="va">Cluster</span><span class="op">)</span><span class="op">)</span>,
+    clust_50orbelow <span class="op">=</span>
+           <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html">case_when</a></span><span class="op">(</span>
+             <span class="va">numeric_cluster</span> <span class="op">&lt;=</span> <span class="fl">50</span> <span class="op">~</span> <span class="st">"top 50"</span>,
+             <span class="va">numeric_cluster</span> <span class="op">&lt;=</span><span class="fl">1184</span> <span class="op">~</span> <span class="st">"not top 50 but in horsh cluster"</span>,
+             <span class="cn">TRUE</span> <span class="op">~</span> <span class="st">"new cluster"</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">clust_50orbelow</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">tally</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>
+    tot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>,
+    prop <span class="op">=</span> <span class="va">n</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 3 × 4</span>
+<span class="co">#&gt;   clust_50orbelow                     n   tot  prop</span>
+<span class="co">#&gt;   &lt;chr&gt;                           &lt;int&gt; &lt;int&gt; &lt;dbl&gt;</span>
+<span class="co">#&gt; 1 new cluster                       175   473 0.370</span>
+<span class="co">#&gt; 2 not top 50 but in horsh cluster   158   473 0.334</span>
+<span class="co">#&gt; 3 top 50                            140   473 0.296</span>
+
+<span class="va">dassimEcoli_Horesh.metadata</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>clust_50orbelow <span class="op">=</span>
+           <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html">case_when</a></span><span class="op">(</span>
+             <span class="va">PopPUNK</span> <span class="op">&lt;=</span> <span class="fl">50</span> <span class="op">~</span> <span class="st">"top 50"</span>,
+             <span class="va">PopPUNK</span> <span class="op">&lt;=</span><span class="fl">1184</span> <span class="op">~</span> <span class="st">"not top 50 but in horsh cluster"</span>,
+             <span class="cn">TRUE</span> <span class="op">~</span> <span class="st">"new cluster"</span><span class="op">)</span>
+         <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">clust_50orbelow</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">tally</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>
+    tot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>,
+    prop <span class="op">=</span> <span class="va">n</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> 
+<span class="co">#&gt; # A tibble: 2 × 4</span>
+<span class="co">#&gt;   clust_50orbelow                     n   tot  prop</span>
+<span class="co">#&gt;   &lt;chr&gt;                           &lt;int&gt; &lt;int&gt; &lt;dbl&gt;</span>
+<span class="co">#&gt; 1 not top 50 but in horsh cluster  2459 10146 0.242</span>
+<span class="co">#&gt; 2 top 50                           7687 10146 0.758</span></code></pre></div>
 </div>
 </div>
 </div>
