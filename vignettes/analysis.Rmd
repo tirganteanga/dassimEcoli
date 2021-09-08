@@ -365,7 +365,7 @@ if (write_figs) {
 
 ### Malawi isolates in a global context
 
-#### Phlogeny
+#### Phylogeny
 
 
 ```{r esco-glob-tree-prep}
@@ -435,7 +435,8 @@ bind_rows(
         grepl("s", Year)  ~ as.numeric(gsub("s", "", Year)),
         grepl("-", Year) ~  as.numeric(gsub("-.*$", "", Year)),
         TRUE ~ as.numeric(str_trim(Year))
-      )
+      ),
+      Pathotype = Pathotype
     )) %>%   mutate(Continent =
                  case_when(
                    grepl("America", Continent) ~ "Americas",
@@ -1000,4 +1001,225 @@ if (write_figs) {
 
 
 
+```
+
+
+```{r poppunk-clusts-tab}
+
+
+df_all %>%
+  filter(study %in% c("dassim", "horesh")) %>%
+  group_by(study, Cluster, ST) %>%
+  summarise(n_ST = n()) %>%
+  group_by(study, Cluster) %>%
+  mutate(n_cluster = sum(n_ST))  %>%
+  summarise(
+    cluster_size = n_cluster,
+            STprop = n_ST/n_cluster,
+            STpropstr =
+              paste0("ST", ST," (",
+              formatC(n_ST / n_cluster, 2, format = "f"), ")"),
+    )  ->
+  df_clusttab
+
+df_clusttab$STpropstr <- 
+  factor(df_clusttab$STpropstr, levels = unique(
+    df_clusttab$STpropstr[order(df_clusttab$STprop,
+                                decreasing = TRUE)])
+    )
+
+df_clusttab %>% 
+  filter(STprop >= 0.01) %>% 
+  pivot_wider(
+    id_cols = c(Cluster),
+   names_from = study,
+   values_from = c(cluster_size,STpropstr),
+   values_fn = list( STpropstr = function(x) paste(sort(x),collapse = ";"),
+                     cluster_size = unique),
+   values_fill = list(STpropstr = "-",
+                      cluster_size = 0)
+     ) %>% 
+  arrange(desc(cluster_size_dassim), desc(cluster_size_horesh)) %>% 
+  filter(cluster_size_dassim > 0) %>% 
+  left_join(
+    df_all %>%
+    filter(study %in% c("dassim", "horesh")) %>%
+    group_by(Cluster) %>% 
+    summarise(pgroup = names(sort(table(Phylogroup), decreasing=TRUE)[1]))
+  ) ->
+  df_clusttab
+
+
+df_all %>%
+  filter(study %in% c("dassim", "horesh")) %>%
+  group_by(study, Cluster, Continent) %>%
+  summarise(n_continent = n()) %>%
+  group_by(study, Cluster) %>%
+  mutate(n_cluster = sum(n_continent))  %>%
+  summarise(
+    cluster_size = n_cluster,
+            contprop = n_continent/n_cluster,
+            contpropstr =
+              paste0( Continent," (",
+              formatC(n_continent / n_cluster, 2, format = "f"), ")"),
+    )  ->
+  df_clust.cont
+
+df_clust.cont$contpropstr <- 
+  factor(df_clust.cont$contpropstr, levels = unique(
+    df_clust.cont$contpropstr[order(df_clust.cont$contprop,
+                                decreasing = TRUE)])
+    )
+
+left_join(df_clusttab,
+df_clust.cont %>% 
+  pivot_wider(
+    id_cols = c(Cluster),
+   names_from = study,
+   values_from = contpropstr,
+   values_fn = function(x) paste(sort(x),collapse = ";"),
+   values_fill = "-",
+  )
+) %>% 
+  arrange(desc(cluster_size_dassim), desc(cluster_size_horesh)) ->
+  df_clusttab
+
+df_all %>%
+  filter(study %in% c("dassim", "horesh")) %>%
+  mutate(Pathotype = gsub(" \\(predicted\\)","", Pathotype)) %>% 
+  group_by(study, Cluster, Pathotype) %>%
+  summarise(n_path = n()) %>%
+  group_by(study, Cluster) %>%
+  mutate(n_cluster = sum(n_path))  %>%
+  summarise(
+    cluster_size = n_cluster,
+            pathprop = n_path/n_cluster,
+            pathpropstr =
+              paste0( Pathotype," (",
+              formatC(n_path / n_cluster, 2, format = "f"), ")"),
+    )  ->
+  df_clust.path
+
+df_clust.path$pathpropstr <- 
+  factor(df_clust.path$pathpropstr, levels = unique(
+    df_clust.path$pathpropstr[order(df_clust.path$pathprop,
+                                decreasing = TRUE)])
+    )
+
+
+left_join(df_clusttab,
+df_clust.path %>% 
+  pivot_wider(
+    id_cols = c(Cluster),
+   names_from = study,
+   values_from = pathpropstr,
+   values_fn = function(x) paste(sort(x),collapse = ";"),
+   values_fill = "-",
+  ) %>% 
+  transmute(
+    Cluster = Cluster,
+    horesh_pathotype = horesh,
+)) ->
+  df_clusttab
+
+
+
+df_clusttab %>%
+  select(Cluster,
+         pgroup,
+         cluster_size_dassim,
+         STpropstr_dassim,
+         cluster_size_horesh,
+         STpropstr_horesh,
+         horesh,
+         horesh_pathotype
+         ) %>%
+  kbl(caption =
+        "Cluster assigment of samples from this study compared to Horesh collection",
+      col.names = c("Cluster","Phylogroup",
+                    rep(c(
+                    "n isolates",
+                    "STs"),2),"Location", "Pathotype")
+      ) %>%
+  kable_classic(full_width = FALSE) %>% 
+  add_header_above(c(" " = 2, "This Study" = 2, "Horesh Collection" = 4))
+
+if (write_figs) {
+ write_csv(df_clusttab %>% 
+             transmute(
+               Cluster = Cluster,
+               Phylogroup = pgroup,
+               n_this_study = cluster_size_dassim,
+               STs_this_study = STpropstr_dassim,
+               n_horesh = cluster_size_horesh,
+               STs_horesh = STpropstr_horesh,
+               location_horesh = horesh,
+               pathotype_horesh = horesh_pathotype),
+           here("tables/cluster_stats.csv")
+ )
+   
+}
+
+```
+
+```{r bits-and-bobs}
+
+# bits and bobs to calculate for manuscript
+
+# how many clusters?
+
+dassimEcoli_BTEcoli.accession %>% 
+  group_by(Cluster) %>% 
+  tally() %>% 
+  nrow()
+
+dassimEcoli_BTEcoli.accession %>% 
+  group_by(Cluster) %>% 
+  tally() %>% 
+  summarise(
+    median_size = median(n),
+    lq = quantile(n, 0.25),
+    uq = quantile(n, 0.75)
+  )
+
+
+dassimEcoli_BTEcoli.accession %>% 
+  group_by(Cluster) %>% 
+  tally() %>% 
+  arrange(-n)
+
+dassimEcoli_BTEcoli.accession %>% 
+  group_by(Cluster, ST) %>% 
+  tally() %>% 
+  arrange(-n)
+
+df_all %>% 
+  filter(study == "dassim") %>% 
+  mutate(numeric_cluster = as.numeric(
+    gsub("_.*$","",Cluster)),
+    clust_50orbelow =
+           case_when(
+             numeric_cluster <= 50 ~ "top 50",
+             numeric_cluster <=1184 ~ "not top 50 but in horsh cluster",
+             TRUE ~ "new cluster")
+  ) %>% 
+  group_by(clust_50orbelow) %>% 
+  tally() %>% 
+  mutate(
+    tot = sum(n),
+    prop = n/sum(n))
+
+dassimEcoli_Horesh.metadata %>% 
+  mutate(clust_50orbelow =
+           case_when(
+             PopPUNK <= 50 ~ "top 50",
+             PopPUNK <=1184 ~ "not top 50 but in horsh cluster",
+             TRUE ~ "new cluster")
+         ) %>% 
+  group_by(clust_50orbelow) %>% 
+  tally() %>% 
+  mutate(
+    tot = sum(n),
+    prop = n/sum(n)) 
+         
 ```
