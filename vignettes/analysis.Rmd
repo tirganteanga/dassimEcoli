@@ -85,8 +85,10 @@ if (write_figs) {
 
 ```{r mlst-and-phylogroup, fig.height = 4, fig.width = 7, fig.cap = "FIGURE 1: Sequence types (A) and phylogroups (B) of included isolates"}
 
+pgroup_cols <- c(hue_pal()(9)[c(1:5,7:8)], "gray")
 
-
+names(pgroup_cols) <-
+  sort(unique(dassimEcoli_BTEcoli.accession$Phylogroup))
 
 dassimEcoli_BTEcoli.accession %>% 
   group_by(ST) %>% 
@@ -97,7 +99,9 @@ dassimEcoli_BTEcoli.accession %>%
   coord_flip() +
   theme_bw() +
   theme(legend.position = "none") +
-  labs(x = "ST", y = "n") -> p1 
+  labs(x = "ST", y = "n") +
+  scale_fill_manual(values = pgroup_cols) -> 
+  p1 
 #  scale_fill_viridis_d(option = "cividis") -> p1
   
 dassimEcoli_BTEcoli.accession %>% 
@@ -108,6 +112,7 @@ dassimEcoli_BTEcoli.accession %>%
         axis.text.x = element_text(angle = 45,
                                    hjust = 1)) +
 #  scale_fill_viridis_d(option = "cividis") +
+  scale_fill_manual(values = pgroup_cols) +
   labs(x = "Phylogroup", y = "n") -> p2
   
 (p1 | p2) + plot_annotation(tag_levels = "A") -> mlst_plot
@@ -1304,4 +1309,30 @@ dassimEcoli_Horesh.metadata %>%
     tot = sum(n),
     prop = n/sum(n)) 
          
+amr %>% 
+  select(sample, class) %>% 
+  unique() %>% 
+  ungroup() %>% 
+  mutate(n_tot = length(unique(sample))) %>% 
+  group_by(class) %>% 
+  summarise(n = n(),
+            n_tot = max(n_tot),
+            prop = n/n_tot
+  )
+  
+
+  df_all %>% 
+    filter(study == "dassim", ST != "Novel") %>% 
+    group_by(ST) %>% 
+    summarise(n = n()) %>% 
+    ungroup() %>% 
+    summarise(
+      m = median(n),
+      min = min(n),
+      lq = quantile(n, 0.25),
+      uq = quantile(n, 0.75),
+      max = max(n)
+    )
+    
+
 ```
